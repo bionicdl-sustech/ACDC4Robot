@@ -4,13 +4,13 @@
 # If you want to add an additional command, duplicate one of the existing directories and import it here.
 # You need to use aliases (import "entry" as "my_module") assuming you have the default module named "entry".
 from .Fusion2Robot import entry as RDF
-from .ImportRobot import entry as Model
+# from .ImportRobot import entry as Model
 
 # TODO add your imported modules to this list.
 # Fusion will automatically call the start() and stop() functions.
 commands = [
     RDF,
-    Model,
+    # Model,
 ]
 
 
