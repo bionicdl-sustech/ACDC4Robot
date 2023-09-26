@@ -1,5 +1,9 @@
 # Method Explanation
+Fusion 360 API provides a unified way to return informations that can be used in URDF and SDFormat. All the coordinates, vectors is represented w.r.t world coordinate, which is the coordinate of the root component.
+Thus, to make all these information is suitable for robot description format, some coordinates transformations are necessory.
+
 ## Fusion360 Assembly Structure
+
 
 ## URDF Structure
 URDF (Unified Robot Description Format) is a xml-based format to describe a robot. It is the most widely-used robot description format and supported by plentiful simulators. Although [URDF's specifications](http://wiki.ros.org/urdf/XML) has been expanded with abilities to model sensors and describe robot state, it is mostly used with `joint` and `link` elements in a tree structure.

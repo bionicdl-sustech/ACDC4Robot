@@ -1,5 +1,12 @@
 # Instructions for Fusion 360 Assembly
-Currently, this add-in only tested for Fusion360 assemblies with a flatten structure (do not have nested components). Here we present instructions for assembling a robot in Fusion360 that is suitable for this add-in.
+We recommend you assemble components in Fusion 360 with a flat structure, here are reasons:
+1. flat structure is clear and make it easier to understand the structure of the robot model
+2. nested structures might construct closed loop mechanisms that are unexpected and not supported by URDF which causes errors in simulation
+3. nested structure is not fully tested with our add-in currently
+
+Here we present instructions for assembling a robot in Fusion360 that is suitable for this add-in.
+
+If you are not familiar with Fusion 360, [Fusion 360 Assemblies Tutorials](https://help.autodesk.com/view/fusion360/ENU/?guid=GUID-4008D439-DF98-4D92-AB3D-29D8E02F9BCA) provide good tutorials to practice.
 
 ## Fusion360 Terminologies
 - [Body](https://help.autodesk.com/view/fusion360/ENU/?guid=GUID-C1AB4941-D7AD-4D27-A035-2FA9208635B6): a body is a container for a 3D geometry.
@@ -35,5 +42,15 @@ It is *better* for a Fusion 360 Assembly has a **flat** tree structure which mea
 ```
 
 ## Step by Steps Assembling Example
+- Assemble a four bar closed chain linkage:
+![Assemble four bar linkage](./pictures/Assemble-Four-Bar-Linkage.gif)
+
 
 ## Tricks
+-  Replace rigid joint motion type by transforming components into bodies: 
+    1. Four screws joint with component1 by fixed joint type:
+    ![Screws joint with component](./pictures/ScrewsFixedInComponent.png)
+    2. Remove all the joints and turn Screw Components into bodies and put them in Component1:
+    ![Turn into bodies](./pictures/TurnIntoBodies.png)
+    3. Because bodies in a same component have a fixed relative position relationship, which provides similar features with fixed joint motion type. This will simplify robot description file without unnecessary joint elements.
+

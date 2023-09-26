@@ -1,9 +1,12 @@
-# ACDC4Robot: Automated Conversion of Description Conventions for Robots from Design to Learning
+# Fusion2Robot
 
 ## Introduction
-Robot description format (RDF) contains information about robot system model which is required by simulation, visualization, planning etc. In this project, we provide a Fusion360 Add-In for generating robot description files automatically from robot design. 
+Robot description format (RDF) contains information about robot model which is required by simulation, visualization, planning etc. In this project, we provide a Fusion360 Add-In for generating robot description files automatically from robot design. 
 
 Currently, this Add-In supports exporting URDF and SDFormat. URDF (Unified Robotics Description Format) has been the most widely used robot description format, but has several limitations and lack of update. SDFormat (Simulation Description Format) has more features than URDF, such as supporting closed loop chain mechanism. Other robot description formats might be supported in the future.
+
+Also, we provide a Fusion 360 robot model library that can be used out-of-box for design, simulation, and learning. 
+👉[🤖Fusion 360 Robot Library](RobotLibrary.md)
 
 ## Features
 Export robot descriptions files from Fusion360 design file directly with GUI panel.
@@ -56,7 +59,7 @@ Click the icon to start exporting process from the current design.
 
 ## Usage
 ### Before Using This Add-In
-Before exporting robot description files, please follow the following instructions  to make sure the design file is suitable to execute this add-in. 
+Before exporting robot description files, please follow the following instructions to make sure the design file is suitable to execute this add-in. 
 
 To prevent unexpected modification of the original design, it is better to run this add-in in a copy of the design file.
 
@@ -69,7 +72,7 @@ To prevent unexpected modification of the original design, it is better to run t
 - Occurrences refer to the same component are not supported yet, use `Make Independent` to independ those occurrences.
 ![Make Independent](./pictures/MakeIndependent.gif)
 - - Make sure all the components are named with alphanumeric characters, underscore character `_`, and hyphe character `-`. Other languages and characters might cause problems.
-- - Components need to be joint together with a specific structure in order to export the robot description files properly. Please check the [instructions for Fusion360 Assembly](./InstructionsForAssembly.md).
+- - Components need to be joint together with a **flat** structure in order to export the robot description files properly. Please check the [instructions for Fusion360 Assembly](./InstructionsForAssembly.md).
 
 ### After Setting Up Design File
 Click the add-in icon, then chose the robot description format and targeted simulation platform to export.
@@ -88,8 +91,11 @@ Click the add-in icon, then chose the robot description format and targeted simu
 - Test Robotiq-2F85 Gripper in Gazebo
 ![Test Robotiq-2F85 Gripper](./pictures//Robotiq-Gripper-Test.png)
 
-## Robot Database
-We also provides some robot models that assembled by us, and tested the Add-In with these models.
+## Robot Library
+[🤖Fusion 360 Robot Library](RobotLibrary.md)
+
+We also provides some robot models that assembled by us, and tested the Add-In with these models. 
+Hope this robot models can save your time and your energy.
 
 
 ## FAQ
