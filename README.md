@@ -1,4 +1,4 @@
-# Fusion2Robot
+# ACDC4Robot: Automated Conversion of Description Conventions for Robots from Design to Learning
 
 ## Introduction
 Robot description format (RDF) contains information about robot model which is required by simulation, visualization, planning etc. In this project, we provide a Fusion360 Add-In for generating robot description files automatically from robot design. 
