@@ -2,11 +2,16 @@
 Fusion 360 API provides a unified way to return informations that can be used in URDF and SDFormat. All the coordinates, vectors is represented w.r.t world coordinate, which is the coordinate of the root component.
 Thus, to make all these information is suitable for robot description format, some coordinates transformations are necessory.
 
-## Fusion360 Assembly Structure
+## Fusion 360 Assembly Structure
+Fusion 360 API provides the ability to access design model kinematics and dynamics information that is necessay for robot description format. All the elements are represented w.r.t root component frame (world frame). 
+One of the benefits of this way to define elements is that information only depends on the definition of world frame, does not rely on other elements such as parent link.
+This decoupled way reduces constraints in the modelling process.
 
+![Fusion 360 model structure](./pictures/Fusion360-Link-Joint-Model.png)
 
 ## URDF Structure
 URDF (Unified Robot Description Format) is a xml-based format to describe a robot. It is the most widely-used robot description format and supported by plentiful simulators. Although [URDF's specifications](http://wiki.ros.org/urdf/XML) has been expanded with abilities to model sensors and describe robot state, it is mostly used with `joint` and `link` elements in a tree structure.
+![URDF-Link-Joint-Model](./pictures/URDF-Link-Joint-Model.png)
 
 Basic elements that match with a Fusion360 design are listed below:
 - `<robot>`: the root element of a robot, with the required `name` attribute
@@ -28,8 +33,12 @@ Basic elements that match with a Fusion360 design are listed below:
     - `<child>`: the child link which is defined by `link` attribute using the link name
     - `<limit>`: defines the joint limitations by `lower`, `upper`, `effort`, and `velocity` attributes
 
+URDF defines child link(joint) information relied on parent link information, this makes information representation in URDF concise, but creates constrains to model robot using URDF. 
+
 ## SDF Structure
 SDFormat (Simulation Description format) is a xml-based format that  can contain information not only about robots but also about environments. Its [specifications](http://sdformat.org/spec) are similar to URDF but with more abilities. Here we focus on the element `<model>` which mostly represents the robot.
+
+![SDF-Link-Joint-Model](./pictures/SDF-Link-Joint-Model.png)
 
 Although the `<model>` element of SDFormat has more sub-elements to describe a robot, here we only introduce basic elements that can match a Fusion360 design. 
 - `<model>`: model element is used to define a complete robot or any other physical object. The `name` attribute is required.
@@ -61,3 +70,21 @@ Although the `<model>` element of SDFormat has more sub-elements to describe a r
         - `<lower>`: lower joint limit (radians for revolute joints, meters for prismatic joints)
         - `<upper>`: upper joint limit (radians for revolute joints, meters for prismatic joints)
     - `<pose>`: defines the joint frame *J*. By default, the joint frame is expressed in the child link frame
+
+## Fusion 360 to URDF
+| URDF Element | Fusion 360 Elements | Transformation |
+| ------------ | ------------------- | -------------- |
+| Joint *i* origin $^{L_{i-1}}T_{J_{i}}$| $^{W}T_{L_{i-1}}$, $^{W}T_{J_{i}}$ | $^{L_{i-1}}T_{J_{i}} = {(^{W}T_{L_{i-1}})}^{T} \cdot {^{W}T_{J_{i}}}$ |
+| Joint *i* axis $^{J_{i}}\vec{a}$| $^{W}\vec{a}$, $^{W}T_{J_{i}}$| $^{J_{i}}\vec{a} = {(^{W}T_{J_{i}})}^{T} \cdot ^{W}\vec{a}$ |
+| Link *i*'s inertial origin $^{J_{i}}{T_{L_{i}CoM}}$ | $^{W}T_{J_{i}}$, $^{W}{T_{L_{i}CoM}}$ | $^{J_{i}}{T_{L_{i}CoM}} = {(^{W}T_{J_{i}})^{T}} \cdot {^{W}{T_{L_{i}CoM}}}$ |
+|Link *i*'s visual origin $^{J_{i}}T_{L_{i}}$ | $^{W}T_{J_{i}}$, $^{W}T_{L_{i}}$ | $^{J_{i}}T_{L_{i}} = {(^{W}T_{J_{i}})^{T}} \cdot {^{W}T_{L_{i}}}$ |
+|Link *i*'s collision origin $^{J_{i}}T_{L_{i}}$ | $^{W}T_{J_{i}}$, $^{W}T_{L_{i}}$ | $^{J_{i}}T_{L_{i}} = {(^{W}T_{J_{i}})^{T}} \cdot {^{W}T_{L_{i}}}$ |
+
+## Fusion 360 to SDFormat
+| SDF Element | Fusion 360 Elements | Transformation |
+| ----------- | ------------------- | -------------- |
+| Joint *i* pose $^{L_{i}}T_{J_{iC}}$ | $^{W}T_{L_{i}}$, $^{W}T_{J_{iC}}$ | $^{L_{i}}T_{J_{iC}} = {(^{W}T_{L_{i}})^{T}} \cdot {^{W}T_{J_{iC}}}$|
+| Joint *i* axis1 $^{J_{iC}}\vec{a_1}$| $^{W}\vec{a_1}$, $^{W}T_{J_{iC}}$ | $^{J_{iC}}\vec{a_1} = {(^{W}T_{J_{iC}})^{T}} \cdot {^{W}\vec{a_1}}$ |
+| Joint *i* axis1 $^{J_{iC}}\vec{a_2}$| $^{W}\vec{a_2}$, $^{W}T_{J_{iC}}$ | $^{J_{iC}}\vec{a_2} = {(^{W}T_{J_{iC}})^{T}} \cdot {^{W}\vec{a_2}}$ |
+| Link *i*'s pose $^{W}T_{L_{i}}$ | $^{W}T_{L_{i}}$ | $^{W}T_{L_{i}} = {^{W}T_{L_{i}}}$ |
+| Link *i*'s inertial pose $^{L_{i}}T_{L_{i}COM}$ | $^{W}T_{L_{i}}$, $^{W}{T_{L_{i}CoM}}$ | $^{L_{i}}T_{L_{i}COM} = {(^{W}T_{L_{i}})^{T}} \cdot {^{W}{T_{L_{i}CoM}}}$ |
