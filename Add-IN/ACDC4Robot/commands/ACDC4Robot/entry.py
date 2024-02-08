@@ -2,14 +2,14 @@ import adsk.core
 import os
 from ...lib import fusion360utils as futil
 from ... import config
-from . import fusion2Robot
+from . import acdc4robot
 from . import constants
 app = adsk.core.Application.get()
 ui = app.userInterface
 
 
 # TODO *** Specify the command identity information. ***
-CMD_ID = f'{config.COMPANY_NAME}_{config.ADDIN_NAME}_Fusion2Robot'
+CMD_ID = f'{config.COMPANY_NAME}_{config.ADDIN_NAME}_ACDC4Robot'
 CMD_NAME = 'Fusion to Robot'
 CMD_Description = 'Export Fusion360 design model to robot description format'
 
@@ -86,6 +86,7 @@ def command_created(args: adsk.core.CommandCreatedEventArgs):
     rdf_items.add("None", True)
     rdf_items.add("URDF", False)
     rdf_items.add("SDFormat", False)
+    rdf_items.add("MJCF", False)
 
     # create a drop down command input to choose simulation environment
     sim_env_input = inputs.addDropDownCommandInput("simulation_env", "Simulation Environment", adsk.core.DropDownStyles.LabeledIconDropDownStyle)
@@ -93,10 +94,11 @@ def command_created(args: adsk.core.CommandCreatedEventArgs):
     sim_env_items.add("None", True)
     sim_env_items.add("Gazebo", False)
     sim_env_items.add("PyBullet", False)
+    sim_env_items.add("MuJoCo", False)
     sim_env_input.isVisible = False
 
     # create string value input for sdf info
-    sdf_author_input = inputs.addStringValueInput("SDF_Author_name", "Author Name", "Fusion2Robot")
+    sdf_author_input = inputs.addStringValueInput("SDF_Author_name", "Author Name", "ACDC4Robot")
     sdf_author_input.isVisible = False
     sdf_description_input = inputs.addTextBoxCommandInput("SDF_Description", "Description", "Description about the robot model", 3, False)
     sdf_description_input.isVisible = False
@@ -139,7 +141,7 @@ def command_execute(args: adsk.core.CommandEventArgs):
     constants.set_author_name(name_input.value)
     constants.set_model_description(text_input.text)
 
-    fusion2Robot.run()
+    acdc4robot.run()
     # TODO ******************************** Your code here ********************************
 
     # Get a reference to your command's inputs.
@@ -169,6 +171,7 @@ def command_input_changed(args: adsk.core.InputChangedEventArgs):
     inputs = command.commandInputs
     rdf: adsk.core.DropDownCommandInput = inputs.itemById("robot_description_format")
     sim_env: adsk.core.DropDownCommandInput = inputs.itemById("simulation_env")
+    sim_env_items = sim_env.listItems
     sdf_author = inputs.itemById("SDF_Author_name")
     sdf_description = inputs.itemById("SDF_Description")
     # inputs = args.inputs
@@ -181,6 +184,9 @@ def command_input_changed(args: adsk.core.InputChangedEventArgs):
             sim_env.isVisible = True
             
         elif changed_input.selectedItem.name == "SDFormat":
+            sim_env.isVisible = True
+        
+        elif changed_input.selectedItem.name == "MJCF":
             sim_env.isVisible = True
             
 

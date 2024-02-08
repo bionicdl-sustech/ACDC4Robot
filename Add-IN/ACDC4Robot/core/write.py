@@ -1,10 +1,13 @@
 # -*- coding: utf-8 -*-
+# Author: Nuofan
 import xml.etree.ElementTree as ET
 from xml.etree.ElementTree import Element, SubElement
 from .link import Link
 from .joint import Joint
 from . import urdf as URDF
 from . import sdf as SDF
+from . import mjcf as MJCF
+import adsk, adsk.core, adsk.fusion
 
 def write_sdf(link_list: list[Link], joint_list: list[Joint], dir: str, robot_name: str):
     """
@@ -124,4 +127,21 @@ p.disconnect()
         f.write("\n")
 
     
+def write_mjcf(rootComp: adsk.fusion.Component, robotName: str, dir: str):
+    """
+    Write all elements in mjcf
 
+    Parameters:
+    ---------
+    rootComp: rootComp of the design
+    robotName: robot name
+    dir: directory of the mjcf file
+    """
+    mjcf_ele = MJCF.get_mjcf(rootComp, robotName, dir)
+    mjcf_tree = ET.ElementTree(mjcf_ele)
+
+    # set indent to pretty the xml output
+    ET.indent(mjcf_tree, space="    ", level=0)
+    
+    mjcf_file = dir + "/" + robotName + ".xml"
+    mjcf_tree.write(mjcf_file, encoding="utf-8")

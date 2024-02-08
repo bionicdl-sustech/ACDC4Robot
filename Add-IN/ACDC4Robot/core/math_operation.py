@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
+# Author: Nuofan - 12233200@mail.sustech.edu.cn
 """
-contains common useful functions for this project
+contains functions for math operations,
+including matrix operations, spacial mathematics, etc
 """
 import adsk, adsk.core, adsk.fusion
 import math
-import re
-import os
 
 def matrix3d_2_pose(matrix: adsk.core.Matrix3D):
     """
@@ -20,6 +20,7 @@ def matrix3d_2_pose(matrix: adsk.core.Matrix3D):
     ---------
     pose: List
         [x, y, z, roll, pitch, yaw] 
+        This euler angle convertion is "XYZ"
     """
     x = matrix.translation.x * 0.01 # cm to m
     y = matrix.translation.y * 0.01 # cm to m
@@ -46,15 +47,11 @@ def matrix3d_2_pose(matrix: adsk.core.Matrix3D):
         roll = math.atan2(-r23, r22)
         pitch = math.atan2(-r31, sy)
         yaw = 0
-    # pitch = math.atan2(-r31, math.sqrt(math.pow(r32, 2) + math.pow(r33, 2)))
-    # cos_pitch = math.cos(pitch)
-    # yaw = math.atan2(r21/cos_pitch, r11/cos_pitch)
-    # roll = math.atan2(r32/cos_pitch, r33/cos_pitch)
 
     pose = [x, y, z, roll, pitch, yaw]
-    return pose   
+    return pose
 
-def coordinateTransform(w_T_from: adsk.core.Matrix3D, w_T_to: adsk.core.Matrix3D) -> adsk.core.Matrix3D:
+def coordinate_transform(w_T_from: adsk.core.Matrix3D, w_T_to: adsk.core.Matrix3D) -> adsk.core.Matrix3D:
     """
     Returns a transform matrix to transform a from_frame to to_frame
     Parameters
@@ -64,6 +61,7 @@ def coordinateTransform(w_T_from: adsk.core.Matrix3D, w_T_to: adsk.core.Matrix3D
     Return
     ---------
     from_T_to: adsk.core.Matrix3D
+        represent to_frame w.r.t from_frame
         w_T_from * from_T_to = w_T_to       ->
         from_T_to = inv(w_T_from) * w_T_to
     """ 
@@ -79,34 +77,7 @@ def coordinateTransform(w_T_from: adsk.core.Matrix3D, w_T_to: adsk.core.Matrix3D
 
     return from_T_to
 
-def matrix3D_to_str(M: adsk.core.Matrix3D) -> str:
-    """
-    Return a str for printing Matrix3D object
-    """
-    s = "[{}, {}, {}, {}\n \
-{}, {}, {}, {}\n \
-{}, {}, {}, {}\n \
-{}, {}, {}, {}\n]".format(M.getCell(0,0), M.getCell(0,1), M.getCell(0,2), M.getCell(0,3),
-                                  M.getCell(1,0), M.getCell(1,1), M.getCell(1,2), M.getCell(1,3),
-                                  M.getCell(2,0), M.getCell(2,1), M.getCell(2,2), M.getCell(2,3),
-                                  M.getCell(3,0), M.getCell(3,1), M.getCell(3,2), M.getCell(3,3))
-    
-    return s
-
-## https://github.com/django/django/blob/master/django/utils/text.py
-def get_valid_filename(s):
-    """
-    Return the given string converted to a string that can be used for a clean
-    filename. Remove leading and trailing spaces; convert other spaces to
-    underscores; and remove anything that is not an alphanumeric, dash,
-    underscore, or dot.
-    >>> get_valid_filename("john's portrait in 2004.jpg")
-    'johns_portrait_in_2004.jpg'
-    """
-    s = str(s).strip().replace(' ', '_')
-    return re.sub(r'(?u)[^-\w.]', '', s)
-
-def changeOrientation(a_R_b: list, b_v: list):
+def change_orientation(a_R_b: list, b_v: list):
     """
     Rotate vector v to a different orientation or
     Represent vector v in a different frame
@@ -128,7 +99,21 @@ def changeOrientation(a_R_b: list, b_v: list):
     
     return a_v
 
-def matrixMul(M1: list, M2: list):
+def matrix3D_to_str(M: adsk.core.Matrix3D) -> str:
+    """
+    Return a str for printing Matrix3D object
+    """
+    s = "[{}, {}, {}, {}\n \
+{}, {}, {}, {}\n \
+{}, {}, {}, {}\n \
+{}, {}, {}, {}\n]".format(M.getCell(0,0), M.getCell(0,1), M.getCell(0,2), M.getCell(0,3),
+                                  M.getCell(1,0), M.getCell(1,1), M.getCell(1,2), M.getCell(1,3),
+                                  M.getCell(2,0), M.getCell(2,1), M.getCell(2,2), M.getCell(2,3),
+                                  M.getCell(3,0), M.getCell(3,1), M.getCell(3,2), M.getCell(3,3))
+    
+    return s
+
+def matrix_multi(M1: list, M2: list):
     """
     Return M = M1 * M2
 
@@ -150,7 +135,7 @@ def matrixMul(M1: list, M2: list):
 
     return M
 
-def getRotationMatrix(H: adsk.core.Matrix3D):
+def get_rotation_matrix(H: adsk.core.Matrix3D):
     """
     Get rotation matrix R from Matrix3D object
 
@@ -169,7 +154,7 @@ def getRotationMatrix(H: adsk.core.Matrix3D):
     
     return R
 
-def matrixTranspose(M: list):
+def matrix_transpose(M: list):
     """
     Return transpose of a matrix
 
@@ -189,46 +174,6 @@ def matrixTranspose(M: list):
             M_T[i][j] = M[j][i]
 
     return M_T
-
-def export_stl(design: adsk.fusion.Design, save_dir: str):
-    """
-    export each component's stl file into "save_dir/mesh"
-
-    Parameters
-    ---------
-    design: adsk.fusion.Design
-        current active design
-    save_dir: str
-        the direscory to store the export stl file
-    """
-    # create a single exportManager instance
-    exportMgr = design.exportManager
-    # set the directory for the mesh file
-    try: os.mkdir(save_dir + "/meshes")
-    except: pass
-    meshDir = save_dir + "/meshes"
-
-    rootCom = design.rootComponent
-    allOccus = rootCom.allOccurrences
-
-    for occ in allOccus:
-        try: 
-            if occ.component.name == "base_link":
-                stl_name = "base_link"
-            else:
-                stl_name = get_valid_filename(occ.fullPathName)
-            # key = key[:-1] ## will generate an extra "1" in the end, remove it
-            fileName = meshDir + "/" + stl_name
-
-            # create stl exportOptions
-            stlExportOptions = exportMgr.createSTLExportOptions(occ, fileName)
-            stlExportOptions.sendToPrintUtility = False
-            stlExportOptions.isBinaryFormat = True
-            stlExportOptions.meshRefinement = adsk.fusion.MeshRefinementSettings.MeshRefinementLow
-            exportMgr.execute(stlExportOptions)
-        except:
-            pass
-
 
 def matrix_multiply(A, B):
     # Matrix multiplication of A and B

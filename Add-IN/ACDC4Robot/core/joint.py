@@ -7,6 +7,7 @@ Get informations about joints from Fusion360 API
 import adsk, adsk.fusion, adsk.core
 from xml.etree.ElementTree import ElementTree, Element, SubElement
 from . import utils
+from . import math_operation as math_op
 # from .link import Link
 
 class Joint():
@@ -54,15 +55,16 @@ class Joint():
         else:
             child_name = utils.get_valid_filename(self.child.fullPathName)
 
-
         return child_name
 
     def get_sdf_joint_type(self) -> str:
         """
         Currently support following joint type:
             fixed, revolute, prismatic, continuous
+        
         Return:
         joint_type: str
+            fixed, revolute, prismatic
         """
         # currently, only support these three sdf joint type
         sdf_joint_type_list = ["fixed", "revolute", "prismatic"]
@@ -74,6 +76,20 @@ class Joint():
         else:
             pass
         return sdf_joint_type
+    
+    def get_mjcf_joint_type(self) -> str:
+        """
+        Return joint type for mjcf
+        Return
+        ---------
+        joint_type: str
+        """
+        mjcf_joint_type_list = [None, "hinge", "slide"]
+        if self.joint.jointMotion.jointType <= 2:
+            mjcf_joint_type = mjcf_joint_type_list[self.joint.jointMotion.jointType]
+        else:
+            pass
+        return mjcf_joint_type
     
     def get_urdf_joint_type(self) -> str:
         urdf_joint_type_list = ["fixed", "revolute", "prismatic"]
@@ -98,8 +114,8 @@ class Joint():
             min_enabled = self.joint.jointMotion.rotationLimits.isMinimumValueEnabled
             if max_enabled and min_enabled:
                 # unit: radians
-                upper_limit_limit = self.joint.jointMotion.rotationLimits.maximumValue 
-                lower_limit_limit = self.joint.jointMotion.rotationLimits.minimumValue
+                upper_limit = self.joint.jointMotion.rotationLimits.maximumValue 
+                lower_limit = self.joint.jointMotion.rotationLimits.minimumValue
                 return [round(lower_limit, 6), round(upper_limit, 6)]
             else:
                 return None
@@ -143,10 +159,10 @@ class Joint():
                     [w_P_Jc[2]-w_P_Lc[2]]] # 3*1 vector
 
         w_T_Lc = self.child.transform2 # configuration of child-link-frame w.r.t world-frame w
-        w_R_Lc = utils.getRotationMatrix(w_T_Lc) # rotation matrix of child-link-frame w.r.t world-frame w
-        Lc_R_w = utils.matrixTranspose(w_R_Lc) # rotation matrix of world-frame w.r.t child-link-frame Lc
+        w_R_Lc = math_op.get_rotation_matrix(w_T_Lc) # rotation matrix of child-link-frame w.r.t world-frame w
+        Lc_R_w = math_op.matrix_transpose(w_R_Lc) # rotation matrix of world-frame w.r.t child-link-frame Lc
         # vector from child link frame's origin point to child joint origin point w.r.t child-link-frame Lc
-        Lc_V_LcJc = utils.changeOrientation(Lc_R_w, w_V_LcJc) # 3*1 array
+        Lc_V_LcJc = math_op.change_orientation(Lc_R_w, w_V_LcJc) # 3*1 array
         # assume the joint frame has the same oritation as child link frame
         # it seems that rpy of joint doesn't matter, so set them as 0
         sdf_origin = [Lc_V_LcJc[0][0], Lc_V_LcJc[1][0], Lc_V_LcJc[2][0], 0.0, 0.0, 0.0]
@@ -155,9 +171,10 @@ class Joint():
     
     def get_joint_frame(self) -> adsk.core.Matrix3D:
         """
-        Get the joint frame coincides with parent joint origin
-        Return
-        ---------
+        Get the joint frame whose origin coincides with parent joint origin,
+        and has same orientation with parent joint origin frame
+
+        Return:
         joint_frame: adsk.core.Matrix3D
             a homogeneous matrix represents joint frame J in world frame W
             translation unit: cm
@@ -181,7 +198,6 @@ class Joint():
         joint_frame.setWithCoordinateSystem(origin, xAxis, yAxis, zAxis)
 
         return joint_frame
-        
     
     def get_urdf_origin(self):
         """
@@ -232,9 +248,9 @@ class Joint():
         transform = adsk.core.Matrix3D.create()
         # transform.setToAlignCoordinateSystems(from_origin, from_xAxis, from_yAxis, from_zAxis, 
         #                                         to_origin, to_xAsix, to_yAxis, to_zAxis)
-        transform = utils.coordinateTransform(parent_frame, joint_frame)
+        transform = math_op.coordinate_transform(parent_frame, joint_frame)
 
-        joint_origin = utils.matrix3d_2_pose(transform)
+        joint_origin = math_op.matrix3d_2_pose(transform)
 
         return joint_origin
 
@@ -260,6 +276,19 @@ class Joint():
             axis1 = [round(i, 6) for i in self.joint.jointMotion.slideDirectionVector.asArray()] # In Fusion360, returned axis is normalized
             axis2 = None
             return axis1, axis2
+        elif self.joint.jointMotion.jointType == 3: # CylindricalJointType
+            axis1 = [round(i, 6) for i in self.joint.jointMotion.rotationAxisVector.asArray()] # In Fusion360, returned axis is normalized
+            axis2 = None
+            return axis1, axis2
+        elif self.joint.jointMotion.jointType == 4: # PinSlotJointType
+            axis1 = [round(i, 6) for i in self.joint.jointMotion.rotationAxisVector.asArray()] # rotation axis
+            axis2 = [round(i, 6) for i in self.joint.jointMotion.slideDirectionVector.asArray()] # slide axis
+            return axis1, axis2
+        elif self.joint.jointMotion.jointType == 5: # PlanarJointType
+            axis1 = [round(i, 6) for i in self.joint.jointMotion.primarySlideDirectionVector.asArray()] # rotation axis
+            axis2 = [round(i, 6) for i in self.joint.jointMotion.secondarySlideDirectionVector.asArray()] # slide axis
+        elif self.joint.jointMotion.jointType == 6: # BallJointType
+            pass
         
     def get_axes_urdf(self):
         """
@@ -274,88 +303,35 @@ class Joint():
         w_axis1, w_axis2 = self.get_axes()
         J_axis1, J_axis2 = None, None
         joint_frame: adsk.core.Matrix3D = self.get_joint_frame()
-        w_R_J = utils.getRotationMatrix(joint_frame) # represent joint-frame J's orientation w.r.t world-frame w
-        J_R_w = utils.matrixTranspose(w_R_J)
+        w_R_J = math_op.get_rotation_matrix(joint_frame) # represent joint-frame J's orientation w.r.t world-frame w
+        J_R_w = math_op.matrix_transpose(w_R_J)
         if w_axis1 is not None:
             w_axis1 = [[w_axis1[0]], [w_axis1[1]], [w_axis1[2]]] # from 1*3 to 3*1 list
-            J_axis1 = utils.changeOrientation(J_R_w, w_axis1)
+            J_axis1 = math_op.change_orientation(J_R_w, w_axis1)
             J_axis1 = [J_axis1[0][0], J_axis1[1][0], J_axis1[2][0]]
         if w_axis2 is not None:
             w_axis2 = [[w_axis2[0]], [w_axis2[1]], [w_axis2[2]]]
-            J_axis2 = utils.changeOrientation(J_R_w, w_axis2)
+            J_axis2 = math_op.change_orientation(J_R_w, w_axis2)
             J_axis2 = [J_axis2[0][0], J_axis2[1][0], J_axis2[2][0]]
 
         return J_axis1, J_axis2
-
-    def get_joint_sdf_element(self) -> Element:
-        """
-        return a Element object for writing joint tag in sdf
-        """
-        joint_ele = Element("joint")
-        joint_ele.attrib = {"name": self.get_name(), "type": str(self.get_sdf_joint_type())}
-        pose = SubElement(joint_ele, "pose")
-        pose.text = "{} {} {} {} {} {}".format(self.get_sdf_origin()[0],
-                                                    self.get_sdf_origin()[1],
-                                                    self.get_sdf_origin()[2],
-                                                    self.get_sdf_origin()[3],
-                                                    self.get_sdf_origin()[4],
-                                                    self.get_sdf_origin()[5])
-        parent = SubElement(joint_ele, "parent")
-        parent.text = "{}".format(self.get_parent())
-        child = SubElement(joint_ele, "child")
-        child.text = "{}".format(self.get_child())
-        axis1, axis2 = self.get_axes()
-        if axis1 is not None:
-            axis1_element = SubElement(joint_ele, "axis")
-            axis1_xyz = SubElement(axis1_element, "xyz")
-            # Fusion360 api returns joint axis w.r.t world frame,
-            # which is the model frame here
-            axis1_xyz.attrib = {"expressed_in": "__model__"}
-            axis1_xyz.text = "{} {} {}".format(axis1[0], axis1[1], axis1[2])
-            if self.get_limits() is not None:
-                limit_list = self.get_limits()
-                limit = SubElement(axis1_element, "limit")
-                lower = SubElement(limit, "lower")
-                lower.text = str(limit_list[0])
-                upper = SubElement(limit, "upper")
-                upper.text = str(limit_list[1])
-        if axis2 is not None:
-            axis2_element = SubElement(joint_ele, "axis2")
-            axis2_xyz = SubElement(axis2_element, "xyz")
-            axis2_xyz.attrib = {"expressed_in": "__model__"}
-            axis2_xyz.text = "{} {} {}".format(axis2[0], axis2[1], axis2[2])
-
-        return joint_ele
     
-    def get_joint_urdf_element(self):
+    def get_axis_mjcf(self):
         """
-        return a Element object for writing joint tag in urdf
+        I guess the reference frame of the axis is the body contains the joint element,
+        which is the child link of the joint
+
+        Return:
+        axis: list or None
         """
-        joint_ele = Element("joint")
-        joint_ele.attrib = {"name": self.get_name(), 
-                            "type": self.get_urdf_joint_type()}
+        w_axis1, _ = self.get_axes()
+        C_axis = None
+        child_link_frame: adsk.core.Matrix3D = self.child.transform2
+        w_R_C = math_op.get_rotation_matrix(child_link_frame) 
+        C_R_w = math_op.matrix_transpose(w_R_C)
+        if w_axis1 is not None:
+            w_axis1 = [[w_axis1[0]], [w_axis1[1]], [w_axis1[2]]] # from 1*3 to 3*1 list
+            C_axis = math_op.change_orientation(C_R_w, w_axis1)
+            C_axis = [C_axis[0][0], C_axis[1][0], C_axis[2][0]]
         
-        # add joint origin element
-        origin = SubElement(joint_ele, "origin")
-        origin.attrib = {"xyz": "{} {} {}".format(self.get_urdf_origin()[0], self.get_urdf_origin()[1], self.get_urdf_origin()[2]),
-                         "rpy": "{} {} {}".format(self.get_urdf_origin()[3], self.get_urdf_origin()[4], self.get_urdf_origin()[5])}
-        
-        # add parent and child element
-        parent = SubElement(joint_ele, "parent")
-        parent.attrib = {"link": self.get_parent()}
-        child = SubElement(joint_ele, "child")
-        child.attrib = {"link": self.get_child()}
-
-        # add axis1, urdf only has one axis for joint
-        axis1, axis2 = self.get_axes_urdf()
-        if axis1 is not None:
-            axis = SubElement(joint_ele, "axis")
-            axis.attrib = {"xyz": "{} {} {}".format(axis1[0], axis1[1], axis1[2])}
-
-        # add limits
-        if self.get_limits() is not None:
-            limit = SubElement(joint_ele, "limit")
-            limit.attrib = {"lower": "{}".format(self.get_limits()[0]),
-                            "upper": "{}".format(self.get_limits()[1])}
-            
-        return joint_ele
+        return C_axis

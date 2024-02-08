@@ -6,8 +6,9 @@ import adsk, adsk.core, adsk.fusion
 from .link import Link
 from .joint import Joint
 from xml.etree.ElementTree import Element, SubElement
+from . import math_operation as math_op
 from . import utils
-from ..commands.Fusion2Robot import constants
+from ..commands.ACDC4Robot import constants
 
 def get_link_name(link: Link) -> str:
     """
@@ -27,7 +28,7 @@ def get_link_inertial_origin(link: Link) -> list[float]:
         Pose (translation, rotation) of link's CoM frame C w.r.t link-frame L(parent-joint frame J)
         unit: m, radian
     """
-    # the link is the first link(base_link)
+    # the link is the first link so called base-link
     if link.get_parent_joint() is None:
         # for the first link which does not have parent joint
         # do not know the CoM is w.r.t world frame or the link frame
@@ -52,7 +53,7 @@ def get_link_inertial_origin(link: Link) -> list[float]:
                  [link.pose.getCell(0, 1), link.pose.getCell(1, 1), link.pose.getCell(2, 1)],
                  [link.pose.getCell(0, 2), link.pose.getCell(1, 2), link.pose.getCell(2, 2)]]
 
-        L_Lo_CoM = utils.changeOrientation(L_R_w, w_Lo_CoM)
+        L_Lo_CoM = math_op.change_orientation(L_R_w, w_Lo_CoM)
         inertial_origin = [L_Lo_CoM[0][0], L_Lo_CoM[1][0], L_Lo_CoM[2][0], roll, pitch, yaw]
     # the link is not the first link
     else:
@@ -77,9 +78,9 @@ def get_link_inertial_origin(link: Link) -> list[float]:
         transform = adsk.core.Matrix3D.create()
         # transform.setToAlignCoordinateSystems(from_origin, from_xAxis, from_yAxis, from_zAxis, 
         #                                     to_origin, to_xAsix, to_yAxis, to_zAxis)
-        transform = utils.coordinateTransform(parent_joint_frame, CoM_frame)
+        transform = math_op.coordinate_transform(parent_joint_frame, CoM_frame)
 
-        inertial_origin = utils.matrix3d_2_pose(transform)
+        inertial_origin = math_op.matrix3d_2_pose(transform)
 
     return inertial_origin
 
@@ -90,7 +91,7 @@ def get_link_mass(link: Link) -> float:
     mass: float
         unit: kg
     """
-    mass = link.phyPro.mass
+    mass = link.get_mass()
     return mass
 
 def get_link_inertia(link: Link) -> list[float]:
@@ -133,10 +134,10 @@ def get_link_inertia(link: Link) -> list[float]:
         parent_frame: adsk.core.Matrix3D = joint.get_joint_frame()
 
     # Change inertia tensor to the orientation of parent frame
-    R = utils.getRotationMatrix(parent_frame)
-    R_T = utils.matrixTranspose(R)
+    R = math_op.get_rotation_matrix(parent_frame)
+    R_T = math_op.matrix_transpose(R)
 
-    I = utils.matrixMul(utils.matrixMul(R_T, inertia_tensor), R)
+    I = math_op.matrix_multi(math_op.matrix_multi(R_T, inertia_tensor), R)
     inertia_list = [I[0][0], I[1][1], I[2][2], I[0][1], I[1][2], I[0][2]]
 
     return inertia_list # unit: kg*m^2
@@ -182,32 +183,65 @@ def get_mesh_origin(link: Link) -> list[float]:
         transform = adsk.core.Matrix3D.create()
         # transform.setToAlignCoordinateSystems(from_origin, from_xAxis, from_yAxis, from_zAxis, 
         #                                     to_origin, to_xAsix, to_yAxis, to_zAxis)
-        transform = utils.coordinateTransform(parent_joint_frame, link_frame)
-        mesh_origin = utils.matrix3d_2_pose(transform)
+        transform = math_op.coordinate_transform(parent_joint_frame, link_frame)
+        mesh_origin = math_op.matrix3d_2_pose(transform)
 
     return mesh_origin
 
 def get_link_visual_geo(link: Link) -> str:
     """
-    A trimesh file for visual geometry
+    A dir to locate link's visual mesh file
+
     Return:
-    ---------
     mesh_loc: str
         the path to find mesh file
     """
-    mesh_loc = "meshes/" + link.get_name() + ".stl"
-    return mesh_loc
+    visual_body = link.get_visual_body()
+    col_body = link.get_collision_body()
+    if (visual_body is None) and (col_body is None):
+        # visual and collision geometry is same
+        mesh_loc = "meshes/" + link.get_name() + ".stl"
+        return mesh_loc
+    elif (visual_body is not None) and (col_body is not None):
+        mesh_loc = "meshes/" + link.get_name() + "_visual.stl"
+        return mesh_loc
+    elif (visual_body is None) and (col_body is not None):
+        error_message = "Please set two bodies, one for visual and one for collision. \n"
+        error_message = error_message + link.get_name() + " body for visual missing."
+        utils.error_box(error_message)
+        utils.terminate_box()
+    elif (visual_body is not None) and (col_body is None):
+        error_message = "Please set two bodies, one for visual and one for collision. \n"
+        error_message = error_message + link.get_name() + " body for collision missing."
+        utils.error_box(error_message)
+        utils.terminate_box()
 
 def get_link_collision_geo(link: Link) -> str:
     """
-    A trimesh file for collision geometry
+    A dir to locate link's collision mesh file
+
     Return:
-    ---------
     mesh_loc: str
         the path to find mesh file
     """
-    mesh_loc = "meshes/" + link.get_name() + ".stl"
-    return mesh_loc
+    visual_body = link.get_visual_body()
+    col_body = link.get_collision_body()
+    if (visual_body is None) and (col_body is None):
+        mesh_loc = "meshes/" + link.get_name() + ".stl"
+        return mesh_loc
+    elif (visual_body is not None) and (col_body is not None):
+        mesh_loc = "meshes/" + link.get_name() + "_collision.stl"
+        return mesh_loc
+    elif (visual_body is None) and (col_body is not None):
+        error_message = "Please set two bodies, one for visual and one for collision. \n"
+        error_message = error_message + link.get_name() + " body for visual missing."
+        utils.error_box(error_message)
+        utils.terminate_box()
+    elif (visual_body is not None) and (col_body is None):
+        error_message = "Please set two bodies, one for visual and one for collision. \n"
+        error_message = error_message + link.get_name() + " body for collision missing."
+        utils.error_box(error_message)
+        utils.terminate_box()
 
 def get_link_element(link: Link) -> Element:
     """
@@ -309,8 +343,8 @@ def get_joint_origin(joint: Joint) -> list[float]:
     joint_frame = joint.get_joint_frame()
 
     transform = adsk.core.Matrix3D.create()
-    transform = utils.coordinateTransform(parent_frame, joint_frame)
-    joint_origin = utils.matrix3d_2_pose(transform)
+    transform = math_op.coordinate_transform(parent_frame, joint_frame)
+    joint_origin = math_op.matrix3d_2_pose(transform)
 
     return joint_origin
 
@@ -356,11 +390,11 @@ def get_joint_axis(joint: Joint) -> list[float]:
     
     J_axis = None
     joint_frame: adsk.core.Matrix3D = joint.get_joint_frame()
-    w_R_J = utils.getRotationMatrix(joint_frame) # represent joint-frame J's orientation w.r.t world-frame w
-    J_R_w = utils.matrixTranspose(w_R_J) # for a rotation matrix, its inverse is its transpose
+    w_R_J = math_op.get_rotation_matrix(joint_frame) # represent joint-frame J's orientation w.r.t world-frame w
+    J_R_w = math_op.matrix_transpose(w_R_J) # for a rotation matrix, its inverse is its transpose
 
     w_axis = [[w_axis[0]], [w_axis[1]], [w_axis[2]]] # transform from 1*3 to 3*1 list
-    J_axis = utils.changeOrientation(J_R_w, w_axis)
+    J_axis = math_op.change_orientation(J_R_w, w_axis)
     axis = [J_axis[0][0], J_axis[1][0], J_axis[2][0]]
 
     return axis
@@ -398,7 +432,6 @@ def get_joint_limit(joint: Joint) -> list[float]:
             return [round(lower_limit, 6), round(upper_limit, 6), 1_000_000, 1_000_000]
         else:
             return None
-    
 
 def get_joint_element(joint: Joint) -> Element:
     """

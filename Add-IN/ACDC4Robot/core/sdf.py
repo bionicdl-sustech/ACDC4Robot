@@ -6,8 +6,9 @@ import adsk, adsk.core, adsk.fusion
 from .link import Link
 from .joint import Joint
 from xml.etree.ElementTree import Element, SubElement
+from . import math_operation as math_op
 from . import utils
-from ..commands.Fusion2Robot import constants
+from ..commands.ACDC4Robot import constants
 
 def get_link_name(link: Link) -> str:
     """
@@ -27,7 +28,7 @@ def get_link_pose(link: Link) -> list[float]:
         Without @relative_to setting, link pose is expressed in parent element frame, 
         which is the model frame (world frame in Fusion360) by default
     """
-    link_pose = utils.matrix3d_2_pose(link.pose)
+    link_pose = math_op.matrix3d_2_pose(link.pose)
     return link_pose
 
 def get_link_mass(link: Link) -> float:
@@ -65,7 +66,7 @@ def get_link_CoM(link: Link) -> list[float]:
                 [link.pose.getCell(0, 1), link.pose.getCell(1, 1), link.pose.getCell(2, 1)],
                 [link.pose.getCell(0, 2), link.pose.getCell(1, 2), link.pose.getCell(2, 2)]]
 
-    L_Lo_CoM = utils.changeOrientation(L_R_w, w_Lo_CoM)
+    L_Lo_CoM = math_op.change_orientation(L_R_w, w_Lo_CoM)
     CoM = [L_Lo_CoM[0][0], L_Lo_CoM[1][0], L_Lo_CoM[2][0], roll, pitch, yaw]
     
     return CoM
@@ -93,15 +94,15 @@ def get_link_inertia(link: Link) -> list[float]:
 
     # Change inertia tensor to the orientation of link-frame L
     # reference: https://robot.sia.cn/CN/abstract/abstract374.shtml
-    R = utils.getRotationMatrix(link.pose)
-    R_T = utils.matrixTranspose(R)
+    R = math_op.get_rotation_matrix(link.pose)
+    R_T = math_op.matrix_transpose(R)
     inertia_tensor = [[com_ixx, com_ixy, com_ixz],
                         [com_ixy, com_iyy, com_iyz],
                         [com_ixz, com_iyz, com_izz]]
     
     # moments of inertia has the same orientation of L-frame
-    I = utils.matrixMul(utils.matrixMul(R_T, inertia_tensor), R)
-    # I = utils.matrixMul(utils.matrixMul(R, inertia_tensor), R_T)
+    I = math_op.matrix_multi(math_op.matrix_multi(R_T, inertia_tensor), R)
+    # I = math_op.matrix_multi(math_op.matrix_multi(R, inertia_tensor), R_T)
     inertia_list = [I[0][0], I[1][1], I[2][2], I[0][1], I[1][2], I[0][2]]
 
     return inertia_list # unit: kg*m^2
@@ -117,8 +118,7 @@ def get_link_visual_name(link: Link) -> str:
 
 def get_link_collision_name(link: Link) -> str:
     """
-    Return
-    ---------
+    Return:
     collision_name: str
     """
     collision_name = link.get_name() + "_collision"
@@ -126,8 +126,7 @@ def get_link_collision_name(link: Link) -> str:
 
 def get_link_mesh_origin(link: Link) -> list[float]:
     """
-    Return
-    ---------
+    Return:
     mesh_origin: [x, y, z, roll, pitch, yaw]
         unit: m, radian
     """
@@ -143,8 +142,25 @@ def get_link_visual_geo(link: Link) -> str:
         the path to find mesh file
     """
     robot_name = constants.get_robot_name()
-    mesh_loc = "model://" + robot_name + "/meshes/" + str(link.get_name()) + ".stl"
-    return mesh_loc
+    visual_body = link.get_visual_body()
+    col_body = link.get_collision_body()
+    if (visual_body is None) and (col_body is None):
+        # visual and collision geometry is same
+        mesh_loc = "model://" + robot_name + "/meshes/" + link.get_name() + ".stl"
+        return mesh_loc
+    elif (visual_body is not None) and (col_body is not None):
+        mesh_loc = "model://" + robot_name + "/meshes/" + link.get_name() + "_visual.stl"
+        return mesh_loc
+    elif (visual_body is None) and (col_body is not None):
+        error_message = "Please set two bodies, one for visual and one for collision. \n"
+        error_message = error_message + link.get_name() + " body for visual missing."
+        utils.error_box(error_message)
+        utils.terminate_box()
+    elif (visual_body is not None) and (col_body is None):
+        error_message = "Please set two bodies, one for visual and one for collision. \n"
+        error_message = error_message + link.get_name() + " body for collision missing."
+        utils.error_box(error_message)
+        utils.terminate_box()
 
 def get_link_collision_geo(link: Link) -> str:
     """
@@ -155,8 +171,25 @@ def get_link_collision_geo(link: Link) -> str:
         the path to find mesh file
     """
     robot_name = constants.get_robot_name()
-    mesh_loc = "model://" + robot_name + "/meshes/" + str(link.get_name()) + ".stl"
-    return mesh_loc
+    visual_body = link.get_visual_body()
+    col_body = link.get_collision_body()
+    if (visual_body is None) and (col_body is None):
+        # visual and collision geometry is same
+        mesh_loc = "model://" + robot_name + "/meshes/" + link.get_name() + ".stl"
+        return mesh_loc
+    elif (visual_body is not None) and (col_body is not None):
+        mesh_loc = "model://" + robot_name + "/meshes/" + link.get_name() + "_collision.stl"
+        return mesh_loc
+    elif (visual_body is None) and (col_body is not None):
+        error_message = "Please set two bodies, one for visual and one for collision. \n"
+        error_message = error_message + link.get_name() + " body for visual missing."
+        utils.error_box(error_message)
+        utils.terminate_box()
+    elif (visual_body is not None) and (col_body is None):
+        error_message = "Please set two bodies, one for visual and one for collision. \n"
+        error_message = error_message + link.get_name() + " body for collision missing."
+        utils.error_box(error_message)
+        utils.terminate_box()
 
 def get_link_element(link: Link) -> Element:
     """
@@ -275,10 +308,10 @@ def get_joint_pose(joint: Joint) -> list[float]:
                 [w_P_Jc[2]-w_P_Lc[2]]] # 3*1 vector
 
     w_T_Lc = joint.child.transform2 # configuration of child-link-frame w.r.t world-frame w
-    w_R_Lc = utils.getRotationMatrix(w_T_Lc) # rotation matrix of child-link-frame w.r.t world-frame w
-    Lc_R_w = utils.matrixTranspose(w_R_Lc) # rotation matrix of world-frame w.r.t child-link-frame Lc
+    w_R_Lc = math_op.get_rotation_matrix(w_T_Lc) # rotation matrix of child-link-frame w.r.t world-frame w
+    Lc_R_w = math_op.matrix_transpose(w_R_Lc) # rotation matrix of world-frame w.r.t child-link-frame Lc
     # vector from child link frame's origin point to child joint origin point w.r.t child-link-frame Lc
-    Lc_V_LcJc = utils.changeOrientation(Lc_R_w, w_V_LcJc) # 3*1 array
+    Lc_V_LcJc = math_op.change_orientation(Lc_R_w, w_V_LcJc) # 3*1 array
     # assume the joint frame has the same oritation as child link frame
     # it seems that rpy of joint doesn't matter, so set them as 0
     sdf_origin = [Lc_V_LcJc[0][0], Lc_V_LcJc[1][0], Lc_V_LcJc[2][0], 0.0, 0.0, 0.0]
