@@ -277,7 +277,7 @@ def get_link_element(link: Link) -> Element:
                        "rpy": "{} {} {}".format(get_mesh_origin(link)[3], get_mesh_origin(link)[4], get_mesh_origin(link)[5])}
     geometry_v = SubElement(visual, "geometry")
     mesh_v = SubElement(geometry_v, "mesh")
-    mesh_v.attrib = {"filename": get_link_visual_geo(link)}
+    mesh_v.attrib = {"filename": get_link_visual_geo(link), "scale": "0.001 0.001 0.001"}
 
     # add collision sub-element
     collision = SubElement(link_ele, "collision")
@@ -287,7 +287,7 @@ def get_link_element(link: Link) -> Element:
                        "rpy": "{} {} {}".format(get_mesh_origin(link)[3], get_mesh_origin(link)[4], get_mesh_origin(link)[5])}
     geometry_c = SubElement(collision, "geometry")
     mesh_c = SubElement(geometry_c, "mesh")
-    mesh_c.attrib = {"filename": get_link_collision_geo(link)}
+    mesh_c.attrib = {"filename": get_link_collision_geo(link), "scale": "0.001 0.001 0.001"}
 
     return link_ele
 

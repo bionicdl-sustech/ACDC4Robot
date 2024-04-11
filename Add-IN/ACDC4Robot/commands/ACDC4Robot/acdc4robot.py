@@ -130,10 +130,10 @@ def run():
         # Set design type into do not capture design history
         design.designType = adsk.fusion.DesignTypes.DirectDesignType
 
-        # Check the length unit of Fusion360
-        if design.unitsManager.defaultLengthUnits != "m":
-            ui.messageBox("Please set length unit to 'm'!", msg_box_title)
-            return 0 # exit run() function
+        # # Check the length unit of Fusion360
+        # if design.unitsManager.defaultLengthUnits != "m":
+        #     ui.messageBox("Please set length unit to 'm'!", msg_box_title)
+        #     return 0 # exit run() function
         
         root = design.rootComponent # get root component
         allComp = design.allComponents

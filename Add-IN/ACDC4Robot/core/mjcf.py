@@ -23,7 +23,7 @@ def get_mjcf_mesh(link: Link) -> Element:
     """
     mesh_ele = ET.Element("mesh")
     file_name: str = link.get_name() + ".stl"
-    mesh_ele.attrib = {"file": file_name}
+    mesh_ele.attrib = {"file": file_name, "scale": "0.001 0.001 0.001"}
     return mesh_ele
 
 def get_mjcf_body(link: Link, parent_link: Link = None) -> Element:

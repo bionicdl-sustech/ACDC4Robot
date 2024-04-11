@@ -238,6 +238,8 @@ def get_link_element(link: Link) -> Element:
     vis_geo_mesh = SubElement(vis_geo, "mesh")
     vis_geo_mesh_uri = SubElement(vis_geo_mesh, "uri")
     vis_geo_mesh_uri.text = visual_uri
+    vis_geo_mesh_scale = SubElement(vis_geo_mesh, "scale")
+    vis_geo_mesh_scale.text = "0.001 0.001 0.001"
 
     # collision
     collision = SubElement(link_ele, "collision")
@@ -248,6 +250,8 @@ def get_link_element(link: Link) -> Element:
     col_geo_mesh = SubElement(col_geo, "mesh")
     col_geo_mesh_uri = SubElement(col_geo_mesh, "uri")
     col_geo_mesh_uri.text = collision_uri
+    col_geo_mesh_scale = SubElement(col_geo_mesh, "scale")
+    col_geo_mesh_scale.text = "0.001 0.001 0.001"
 
     return link_ele
 
