@@ -19,6 +19,7 @@ Export robot descriptions files from Fusion360 design file directly with GUI pan
 - Supported robot description formats:
     - [URDF](http://wiki.ros.org/urdf/XML) (Unified Robotics Description Format)
     - [SDFormat](http://sdformat.org/spec) (Simulation Description Format) or SDF
+    - [MJCF](https://mujoco.readthedocs.io/en/latest/XMLreference.html) (MuJoCo Format)
 
 ## Installation
 You can install this Add-In manually or by shell command.
@@ -62,7 +63,7 @@ Click the icon to start exporting process from the current design.
 ### Before Using This Add-In
 Before exporting robot description files, please follow the following instructions to make sure the design file is suitable to execute this add-in. 
 
-To prevent unexpected modification of the original design, it is better to run this add-in in a copy of the design file.
+To prevent unexpected modification of the original design, it is better to <mark>run this add-in in a copy of the design file</mark>.
 
 - Exit parametric mode: right click the root component of the design, choose `Do not capture Design History`
 ![Do not capture Design History](./pictures/DoNotCaptureDesignHistory.PNG)
