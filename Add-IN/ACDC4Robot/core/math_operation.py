@@ -51,6 +51,51 @@ def matrix3d_2_pose(matrix: adsk.core.Matrix3D):
     pose = [x, y, z, roll, pitch, yaw]
     return pose
 
+def matrix3d_2_euler_xyz(matrix: adsk.core.Matrix3D):
+    """
+    Convert configuration matrix (Matrix3D) into pose(translation, rotation) representation
+
+    Parameter:
+    ---------
+    matrix: adsk.core.Matric3D
+        Homogeneous matrix
+
+    Return: 
+    ---------
+    pose: List
+        [x, y, z, roll, pitch, yaw] 
+        This euler angle convertion is "xyz"
+    """
+    x = matrix.translation.x * 0.01 # cm to m
+    y = matrix.translation.y * 0.01 # cm to m
+    z = matrix.translation.z * 0.01 # cm to m
+
+    threshold = 10e-10
+    check = lambda v: v if abs(v) > threshold else 0.0
+
+    r11 = matrix.getCell(0, 0)
+    r12 = matrix.getCell(0, 1)
+    r13 = matrix.getCell(0, 2)
+    r22 = matrix.getCell(1, 1)
+    r23 = matrix.getCell(1, 2)
+    r32 = matrix.getCell(2, 1)
+    r33 = matrix.getCell(2, 2)
+
+    sy = math.sqrt(r33**2 + r23**2)
+    singular = sy < 1e-6
+
+    if not singular:
+        roll = math.atan2(-r23, r33)
+        pitch = math.atan2(r13, sy)
+        yaw = math.atan2(-r12, r11)
+    else:
+        roll = math.atan2(-r32, r22)
+        pitch = math.atan2(r13, sy)
+        yaw = 0
+    
+    pose = [x, y, z, roll, pitch, yaw]
+    return pose 
+
 def coordinate_transform(w_T_from: adsk.core.Matrix3D, w_T_to: adsk.core.Matrix3D) -> adsk.core.Matrix3D:
     """
     Returns a transform matrix to transform a from_frame to to_frame

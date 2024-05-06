@@ -22,8 +22,9 @@ def get_mjcf_mesh(link: Link) -> Element:
         mesh element in mjcf
     """
     mesh_ele = ET.Element("mesh")
-    file_name: str = link.get_name() + ".stl"
-    mesh_ele.attrib = {"file": file_name, "scale": "0.001 0.001 0.001"}
+    name: str = link.get_name()
+    file_name: str = "meshes/" + link.get_name() + ".stl"
+    mesh_ele.attrib = {"name":name, "file": file_name, "scale": "0.001 0.001 0.001"}
     return mesh_ele
 
 def get_mjcf_body(link: Link, parent_link: Link = None) -> Element:
@@ -39,14 +40,14 @@ def get_mjcf_body(link: Link, parent_link: Link = None) -> Element:
     body_name: str = link.get_name()
     if parent_link == None:
         # a root of a body tree
-        pose = math_op.matrix3d_2_pose(link.pose)
+        pose = math_op.matrix3d_2_euler_xyz(link.pose)
         pos_attr = "{} {} {}".format(pose[0], pose[1], pose[2])
         euler_attr = "{} {} {}".format(pose[3], pose[4], pose[5])
     else:
         parent_frame: adsk.core.Matrix3D = parent_link.pose # parent_frame w.r.t world_frame
         child_frame: adsk.core.Matrix3D = link.pose # child_frame w.r.t world_frame
         parent_T_child: adsk.core.Matrix3D = math_op.coordinate_transform(parent_frame, child_frame)
-        pose = math_op.matrix3d_2_pose(parent_T_child)
+        pose = math_op.matrix3d_2_euler_xyz(parent_T_child)
         pos_attr = "{} {} {}".format(pose[0], pose[1], pose[2])
         euler_attr = "{} {} {}".format(pose[3], pose[4], pose[5])
 
@@ -181,8 +182,10 @@ def get_mjcf(root_comp: adsk.fusion.Component, robot_name: str, dir: str) -> Ele
     # add compiler subelement of mujoco
     # the default eulerseq conventioin used in URDF corresponds to the default “xyz” in MJCF
     # Here we use an extrinsic X-Y-Z rotation
+    # compiler_ele = ET.SubElement(root, "compiler", 
+    #                             {"angle": "radian", "meshdir": (dir + "/meshes"), "eulerseq":"XYZ"})
     compiler_ele = ET.SubElement(root, "compiler", 
-                                {"angle": "radian", "meshdir": (dir + "/meshes"), "eulerseq":"XYZ"})
+                                {"angle": "radian"})
     
     # add asset subelement of mujoco
     asset_ele = ET.SubElement(root, "asset")
