@@ -11,6 +11,7 @@ from ...core.joint import Joint
 from . import constants
 from ...core import write
 from ...core import utils
+import time
 
 def get_link_joint_list(design: adsk.fusion.Design):
     """
@@ -164,18 +165,18 @@ def run():
         simulator = constants.get_sim_env()
 
         if rdf == None:
-            ui.messageBox("Robot description format is None. \
-                          Please choose one robot description format", msg_box_title)
+            ui.messageBox("Robot description format is None.\n" +
+                          "Please choose one robot description format", msg_box_title)
         elif rdf == "URDF":
             if simulator  == "None":
-                ui.messageBox("Simulation environment is None. \
-                              Please select a simulation environment.", msg_box_title)
+                ui.messageBox("Simulation environment is None.\n" +
+                              "Please select a simulation environment.", msg_box_title)
             elif simulator == "Gazebo":
                 # write to .urdf file
                 write.write_urdf(link_list, joint_list, save_folder, robot_name)
                 # export mesh files
                 export_stl(design, save_folder, link_list)
-                ui.messageBox("Finish exporting URDF for Gazebo.", msg_box_title)
+                ui.messageBox("Finished exporting URDF for Gazebo.", msg_box_title)
                 
             elif simulator == "PyBullet":
                 # write to .urdf file
@@ -184,12 +185,20 @@ def run():
                 export_stl(design, save_folder, link_list)
                 # generate pybullet script
                 write.write_hello_pybullet(rdf, robot_name, save_folder)
-                ui.messageBox("Finish exporting URDF for PyBullet.", msg_box_title)
+                ui.messageBox("Finished exporting URDF for PyBullet.", msg_box_title)
+            
+            elif simulator == "MuJoCo":
+                # write to .urdf file
+                write.write_urdf(link_list, joint_list, save_folder, robot_name)
+                # export mesh files
+                export_stl(design, save_folder, link_list)
+                
+                ui.messageBox("Finished exporting URDF for MuJoCo.", msg_box_title)
 
         elif rdf == "SDFormat":
             if simulator == "None":
-                ui.messageBox("Simulation environment is None. \
-                              Please select a simulation environment.", msg_box_title)
+                ui.messageBox("Simulation environment is None.\n" + 
+                              "Please select a simulation environment.", msg_box_title)
             elif simulator == "Gazebo":
                 # write to .sdf file
                 write.write_sdf(link_list, joint_list, save_folder, robot_name)
@@ -199,7 +208,7 @@ def run():
                 write.write_sdf_config(save_folder, robot_name, author, des)
                 # export stl files
                 export_stl(design, save_folder, link_list)
-                ui.messageBox("Finish exporting SDFormat for Gazebo.", msg_box_title)
+                ui.messageBox("Finished exporting SDFormat for Gazebo.", msg_box_title)
             elif simulator == "PyBullet":
                 # write to .sdf file
                 write.write_sdf(link_list, joint_list, save_folder, robot_name)
@@ -207,24 +216,29 @@ def run():
                 export_stl(design, save_folder, link_list)
                 # generate pybullet script
                 write.write_hello_pybullet(rdf,robot_name, save_folder)
-                ui.messageBox("Finish exporting SDFormat for PyBullet.", msg_box_title)
+                ui.messageBox("Finished exporting SDFormat for PyBullet.", msg_box_title)
+            
+            elif simulator == "MuJoCo":
+                ui.messageBox("MuJoCo does not support SDFormat. \n" +
+                              "Please select PyBullet or Gazebo as simulation environment.", msg_box_title)
 
         elif rdf == "MJCF":
             if simulator == "None":
-                ui.messageBox("Simulation environment is None. \
-                              Please select a simulation environment.", msg_box_title)
+                ui.messageBox("Simulation environment is None. \n" +
+                              "Please select a simulation environment.", msg_box_title)
             elif simulator == "Gazebo":
-                ui.messageBox("Gazebo not support MJCF. \
-                              Please select MuJoCo for simulation.", msg_box_title)
+                ui.messageBox("Gazebo does not support MJCF. \n"+
+                              "Please select MuJoCo for simulation.", msg_box_title)
             elif simulator == "PyBullet":
-                ui.messageBox("PyBullet not support MJCF. \
-                              Please select MuJoCo for simulation.", msg_box_title)
+                ui.messageBox("PyBullet does not support MJCF. \n" +
+                              "Please select MuJoCo for simulation.", msg_box_title)
             elif simulator == "MuJoCo":
                 # write to .xml file
                 write.write_mjcf(root, robot_name, save_folder)
                 # export stl files
                 export_stl(design, save_folder, link_list)
-                ui.messageBox("Finish exporting MJCF for MuJoCo.", msg_box_title)
+                time.stop(0.1)
+                ui.messageBox("Finished exporting MJCF for MuJoCo.", msg_box_title)
         
     except:
         if ui:
