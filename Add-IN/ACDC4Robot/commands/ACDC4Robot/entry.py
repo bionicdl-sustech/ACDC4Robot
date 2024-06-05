@@ -10,8 +10,8 @@ ui = app.userInterface
 
 # TODO *** Specify the command identity information. ***
 CMD_ID = f'{config.COMPANY_NAME}_{config.ADDIN_NAME}_ACDC4Robot'
-CMD_NAME = 'Fusion to Robot'
-CMD_Description = 'Export Fusion360 design model to robot description format'
+CMD_NAME = 'ACDC4Robot'
+CMD_Description = 'Export Autodesk Fusion design model to robot description format'
 
 # Specify that the command will be promoted to the panel.
 IS_PROMOTED = True
