@@ -90,7 +90,7 @@ def export_stl(design: adsk.fusion.Design, save_dir: str, links: list[Link]):
             visual_exp_options = export_manager.createSTLExportOptions(visual_body, visual_mesh_name)
             visual_exp_options.sendToPrintUtility = False
             visual_exp_options.isBinaryFormat = True
-            visual_exp_options.meshRefinement = adsk.fusion.MeshRefinementSettings.MeshRefinementHigh
+            visual_exp_options.meshRefinement = adsk.fusion.MeshRefinementSettings.MeshRefinementLow
             export_manager.execute(visual_exp_options)
 
             col_mesh_name = mesh_dir + "/" + link.get_name() + "_collision"
