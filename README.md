@@ -25,7 +25,7 @@ Export robot descriptions files from Fusion360 design file directly with GUI pan
 You can install this Add-In manually or by shell command.
 
 ### Manually Installation
-Download and copy `/Add-IN/Fusion2Robot` folder into Fusion360's Add-in directory which should be:
+Download and copy `/Add-IN/ACDC4Robot` folder into Fusion360's Add-in directory which should be:
 
 Windows:
 ```
@@ -38,7 +38,7 @@ $HOME/Library/Application Support/Autodesk/Autodesk Fusion 360/API/AddIns
 ```
 or it can be found at `Preferences -> General -> API -> Default Path for Scripts and Add-Ins`.
 
-### Installation Using Shell Command
+<!-- ### Installation Using Shell Command
 Windows (PowerShell):
 ```PowerShell
 cd <path to /Add-In/Fusion2Robot>
@@ -49,7 +49,7 @@ macOS (Terminal):
 ```bash
 cd <path to /Add-In/Fusion2Robot>
 cp -r ./Fusion2Robot "$HOME/Library/Application Support/Autodesk/Autodesk Fusion 360/API/AddIns/"
-```
+``` -->
 
 ### First Run
 After installation for the first time, use `Shift+S` or click `UTILITIES -> Add-Ins -> Scripts and Add-Ins` to open `Scripts and Add-Ins` window.
