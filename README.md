@@ -35,7 +35,7 @@ Export robot description files from Fusion360 design file directly with GUI pane
     - [URDF](http://wiki.ros.org/urdf/XML) (Unified Robotics Description Format)
     - [SDFormat](http://sdformat.org/spec) (Simulation Description Format) or SDF
     - [MJCF](https://mujoco.readthedocs.io/en/latest/XMLreference.html) (MuJoCo Format)
-- An [robot model library](RobotLibrary.md) including various robot type:
+- An [robot model library](RobotLibrary.md) including various robot types:
   - Robot Arm
   - Gripper
   - Mobile Robot
@@ -43,12 +43,12 @@ Export robot description files from Fusion360 design file directly with GUI pane
   - Humanoid
 
 ## Installation
-You can install this Add-In manually or by shell command.
+You can install this Add-In form Autodesk Fusion app store or manually.
 
 ### Installation form Autodesk App Store
 You can download [ACDC4Robot](https://apps.autodesk.com/FUSION/en/Detail/Index?id=5028052292896011577) from Autodesk Fusion App Store, Windows and Mac version are provided.
 
-Due to the review process of app store, ACDC4Robot at app store might not update in the same frequence as this repository. So updates such as new features and bug fix might be late for ACDC4Robot app store.
+Due to the review process of app store, ACDC4Robot at app store might not update in the same frequence as this repository. So updates such as new features and bug fix might be late for ACDC4Robot app store version.
 
 ### Manually Installation
 Download and copy `/Add-IN/ACDC4Robot` folder into Fusion360's Add-in directory which can be found at `Preferences -> General -> API -> Default Path for Scripts and Add-Ins`.
