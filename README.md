@@ -1,31 +1,59 @@
 # ACDC4Robot: Automated Conversion of Description Conventions for Robots from Design to Learning
 <!-- Alternative name# ACDC4Robot: Automated Conversion of Description Conventions for Robots from Design to Learning -->
+<div style="text-align: center;">
+    <img src="./pictures/ACDC4Robot-Logo-Text.png" alt="ACDC4Robot Logo" width="400"/>
+</div>
+
+## Survey
+We are currently doing a survey on robot description formats and the user experience of ACDC4Robot. It would be very appreciate for you to fill in the questionnaire.
+
+[👉**Survey Link**👈](https://forms.gle/v3gUau9YgiAZG1XB8)
+
+<div style="text-align: center;">
+    <img src="./pictures/Survey-Github.png" alt="Survey QR Code" width="400"/>
+</div>
 
 ## Introduction
 Robot description format (RDF) contains information about robot model which is required by simulation, visualization, planning etc. In this project, we provide a Fusion360 Add-In for generating robot description files automatically from robot design. 
 
-Currently, this Add-In supports exporting URDF and SDFormat. URDF (Unified Robotics Description Format) has been the most widely used robot description format, but has several limitations and lack of update. SDFormat (Simulation Description Format) has more features than URDF, such as supporting closed loop chain mechanism. Other robot description formats might be supported in the future.
+Currently, this Add-In supports exporting URDF, SDFormat, and MJCF. URDF (Unified Robotics Description Format) has been the most widely used robot description format, but has several limitations and lack of update. 
+SDFormat (Simulation Description Format) has more features than URDF, such as supporting closed loop chain mechanism. SDFormat has been a seperated project from Gazebo aims to be a simulator indenpendt format but still not as popular as URDF. 
+MJCF is a robot description format used in simulator MuJoCo and has been support by more simulators such as Nvidia Isaac Sim. It also has more features then URDF to provide more robotic system information. 
+Other robot description formats might be supported in the future.
 
 Also, we provide a Fusion 360 robot model library that can be used out-of-box for design, simulation, and learning. 
 👉[🤖Fusion 360 Robot Library](RobotLibrary.md)
 
-## Features
-Export robot descriptions files from Fusion360 design file directly with GUI panel.
+## Key Features
+Export robot description files from Fusion360 design file directly with GUI panel.
 
-- Support 3 Fusion360 joint motion types:
+<!-- - Support 3 Fusion360 joint motion types:
     - Fixed joint type
     - Revolute joint type with limitation
-    - Slider joint type with limitation
+    - Slider joint type with limitation -->
 - Supported robot description formats:
     - [URDF](http://wiki.ros.org/urdf/XML) (Unified Robotics Description Format)
     - [SDFormat](http://sdformat.org/spec) (Simulation Description Format) or SDF
     - [MJCF](https://mujoco.readthedocs.io/en/latest/XMLreference.html) (MuJoCo Format)
+- An [robot model library](RobotLibrary.md) including various robot type:
+  - Robot Arm
+  - Gripper
+  - Mobile Robot
+  - Quadruped Robot
+  - Humanoid
 
 ## Installation
 You can install this Add-In manually or by shell command.
 
+### Installation form Autodesk App Store
+You can download [ACDC4Robot](https://apps.autodesk.com/FUSION/en/Detail/Index?id=5028052292896011577) from Autodesk Fusion App Store, Windows and Mac version are provided.
+
+Due to the review process of app store, ACDC4Robot at app store might not update in the same frequence as this repository. So updates such as new features and bug fix might be late for ACDC4Robot app store.
+
 ### Manually Installation
-Download and copy `/Add-IN/ACDC4Robot` folder into Fusion360's Add-in directory which should be:
+Download and copy `/Add-IN/ACDC4Robot` folder into Fusion360's Add-in directory which can be found at `Preferences -> General -> API -> Default Path for Scripts and Add-Ins`.
+
+In default it should be at:
 
 Windows:
 ```
@@ -96,8 +124,8 @@ Click the add-in icon, then chose the robot description format and targeted simu
 ## Robot Library
 [🤖Fusion 360 Robot Library](RobotLibrary.md)
 
-We also provides some robot models that assembled by us, and tested the Add-In with these models. 
-Hope this robot models can save your time and your energy.
+We also provides some robot models that assembled manually, and tested the Add-In with these models. 
+This robot library is continuing update, it is welcome to contribute this library.
 
 
 ## FAQ
