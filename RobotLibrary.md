@@ -1,7 +1,7 @@
 # Fusion 360 Robot Library
 ## Introduction
-We'd like to provide Fusion 360 robot models that is out-of-box for design, simulation, and learning.
-All the models has been tested after exporting using ACDC4Robot add-in.
+We'd like to provide Autodesk Fusion robot models that can be used out-of-box for design, simulation, and learning. We are working hard to continuely update more models for this library.
+<!-- All the models has been tested after exporting using ACDC4Robot add-in. -->
 
 ## Robot Library
 | Robot Name | Robot Type | Source Link | Fusion 360 File |
@@ -13,5 +13,10 @@ All the models has been tested after exporting using ACDC4Robot add-in.
 | Robotiq 2F85 | End Effector | [Robotiq](https://robotiq.com/products/2f85-140-adaptive-robot-gripper?ref=nav_product_new_button) | [Fusion 360 Model](https://a360.co/3Zk1M26) |
 | UR5e | Robot Arm | [UR5e](https://www.universal-robots.com/products/ur5-robot/) | [Fusion 360 Model](https://a360.co/3EJeazg) |
 | youBot | Mobile Robot | [KUKA youBot STEP](https://www.kuka.com/en-us/services/downloads?terms=Language:en:1;&q=youBot) | [Fusion 360 Model](https://a360.co/3PpCkUk)|
+| Poppy | Humanoid Robot | [Poppy Github](https://github.com/poppy-project/poppy-humanoid) | [Fusion 360 Model](https://a360.co/4axntAQ)|
+| Barkour | Quadruped Robot | [Deepmind Onshape](https://deepmind.onshape.com/documents/bd3aaf26c384d7d058cee090/w/9bd0468bf4dae717e9b02f17/e/6151d1e161dfa46066201d62?aa=true) | [Fusion 360 Model](https://a360.co/3VUTf5X)|
+| Bennett Quadruped | Quadruped Robot | [SUSTech BionicDL](https://bionicdl.ancorasir.com/) | [Fusion 360 Model](https://a360.co/3zsPTy3) |
+| Wheeled Bennett Quadruped | Quadruped Robot | [SUSTech BionicDL](https://bionicdl.ancorasir.com/) | [Fusion 360 Model](https://a360.co/3zyWAi9) |
 
-## Test Result
+## Asking for Contribution
+If you have Autodesk Fusion robot model that is legal and well assembled, it is welcome to contribute your model to this library.
