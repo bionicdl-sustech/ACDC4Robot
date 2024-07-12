@@ -237,7 +237,7 @@ def run():
                 write.write_mjcf(root, robot_name, save_folder)
                 # export stl files
                 export_stl(design, save_folder, link_list)
-                time.stop(0.1)
+                time.sleep(0.1)
                 ui.messageBox("Finished exporting MJCF for MuJoCo.", msg_box_title)
         
     except:
