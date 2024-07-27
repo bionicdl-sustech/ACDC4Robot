@@ -31,8 +31,10 @@ class Joint():
         """
         # joint names inside each occurrence are identical
         # but joint names in different occurrences can be the same, in which makes conflict
-        parent_name = utils.get_valid_filename(self.parent.fullPathName) # inorder to fix joint's name confliction
-        name = parent_name + "_" + utils.get_valid_filename(self.name)
+        # parent_name = utils.get_valid_filename(self.parent.fullPathName) # inorder to fix joint's name confliction
+        # name = parent_name + "_" + utils.get_valid_filename(self.name)
+        # output name is consistent with the name in Fusion
+        name = utils.get_valid_filename(self.name)
         return name
 
     def get_parent(self):
