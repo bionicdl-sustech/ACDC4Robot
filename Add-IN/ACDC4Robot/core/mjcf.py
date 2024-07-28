@@ -38,16 +38,18 @@ def get_mjcf_body(link: Link, parent_link: Link = None) -> Element:
     """
     body_ele = Element("body")
     body_name: str = link.get_name()
-    if parent_link == None:
+    if parent_link is None:
         # a root of a body tree
-        pose = math_op.matrix3d_2_euler_xyz(link.pose)
+        # pose = math_op.matrix3d_2_euler_xyz(link.pose) 
+        pose = math_op.matrix3d_2_pose(link.pose)
         pos_attr = "{} {} {}".format(pose[0], pose[1], pose[2])
         euler_attr = "{} {} {}".format(pose[3], pose[4], pose[5])
     else:
         parent_frame: adsk.core.Matrix3D = parent_link.pose # parent_frame w.r.t world_frame
         child_frame: adsk.core.Matrix3D = link.pose # child_frame w.r.t world_frame
         parent_T_child: adsk.core.Matrix3D = math_op.coordinate_transform(parent_frame, child_frame)
-        pose = math_op.matrix3d_2_euler_xyz(parent_T_child)
+        # pose = math_op.matrix3d_2_euler_xyz(parent_T_child)
+        pose = math_op.matrix3d_2_pose(parent_T_child)
         pos_attr = "{} {} {}".format(pose[0], pose[1], pose[2])
         euler_attr = "{} {} {}".format(pose[3], pose[4], pose[5])
 
@@ -184,8 +186,9 @@ def get_mjcf(root_comp: adsk.fusion.Component, robot_name: str, dir: str) -> Ele
     # Here we use an extrinsic X-Y-Z rotation
     # compiler_ele = ET.SubElement(root, "compiler", 
     #                             {"angle": "radian", "meshdir": (dir + "/meshes"), "eulerseq":"XYZ"})
+    # Rotation matrix to euler in "xyz" seems have problem, use "XYZ" at temporary
     compiler_ele = ET.SubElement(root, "compiler", 
-                                {"angle": "radian"})
+                                {"angle": "radian", "eulerseq":"XYZ"}) 
     
     # add asset subelement of mujoco
     asset_ele = ET.SubElement(root, "asset")

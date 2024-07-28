@@ -66,6 +66,9 @@ def matrix3d_2_euler_xyz(matrix: adsk.core.Matrix3D):
         [x, y, z, roll, pitch, yaw] 
         This euler angle convertion is "xyz"
     """
+
+    # TODO: Still needs to check if it is right
+    # Some problem seems related with this function
     x = matrix.translation.x * 0.01 # cm to m
     y = matrix.translation.y * 0.01 # cm to m
     z = matrix.translation.z * 0.01 # cm to m
