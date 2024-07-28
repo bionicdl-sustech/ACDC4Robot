@@ -17,6 +17,7 @@ We'd like to provide Autodesk Fusion robot models that can be used out-of-box fo
 | Barkour | Quadruped Robot | [Deepmind Onshape](https://deepmind.onshape.com/documents/bd3aaf26c384d7d058cee090/w/9bd0468bf4dae717e9b02f17/e/6151d1e161dfa46066201d62?aa=true) | [Fusion 360 Model](https://a360.co/3VUTf5X)|
 | Bennett Quadruped | Quadruped Robot | [SUSTech BionicDL](https://bionicdl.ancorasir.com/) | [Fusion 360 Model](https://a360.co/3zsPTy3) |
 | Wheeled Bennett Quadruped | Quadruped Robot | [SUSTech BionicDL](https://bionicdl.ancorasir.com/) | [Fusion 360 Model](https://a360.co/3zyWAi9) |
+| Unitree Go2 | Quadruped Robot | [Unitree Go2](https://oss-global-cdn.unitree.com/static/GO2%E7%AE%80%E5%8C%96-%E4%B8%8D%E5%B8%A6%E6%8B%93%E5%B1%95%E5%9D%9E-0912.zip) | [Fusion 360 Model](https://a360.co/3YhNctG) |
 
 ## Asking for Contribution
 If you have Autodesk Fusion robot model that is legal and well assembled, it is welcome to contribute your model to this library.
