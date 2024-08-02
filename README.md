@@ -10,7 +10,7 @@ We are currently doing a survey on robot description formats and the user experi
 [👉**Survey Link**👈](https://forms.gle/v3gUau9YgiAZG1XB8)
 
 <div style="text-align: center;">
-    <img src="./pictures/Survey-Github.png" alt="Survey QR Code" width="400"/>
+    <img src="./pictures/Github-Survey.png" alt="Survey QR Code" width="400"/>
 </div>
 
 ## Introduction
