@@ -79,6 +79,10 @@ def export_stl(design: adsk.fusion.Design, save_dir: str, links: list[Link]):
             # export the whole occurrence
             mesh_name = mesh_dir + "/" + link.get_name()
             occ = link.get_link_occ()
+            # obj_export_options = export_manager.createOBJExportOptions(occ, mesh_name)
+            # obj_export_options.unitType = adsk.fusion.DistanceUnits.MillimeterDistanceUnits # set unit to mm
+            # obj_export_options.meshRefinement = adsk.fusion.MeshRefinementSettings.MeshRefinementLow
+            # export_manager.execute(obj_export_options)
             stl_export_options = export_manager.createSTLExportOptions(occ, mesh_name)
             stl_export_options.sendToPrintUtility = False
             stl_export_options.isBinaryFormat = True
