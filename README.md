@@ -1,6 +1,6 @@
 # ACDC4Robot: Automated Conversion of Description Conventions for Robots from Design to Learning
 <!-- Alternative name# ACDC4Robot: Automated Conversion of Description Conventions for Robots from Design to Learning -->
-<div style="text-align: center;">
+<!-- <div style="text-align: center;">
     <img src="./pictures/ACDC4Robot-Logo-Text.png" alt="ACDC4Robot Logo" width="400"/>
 </div>
 
@@ -11,7 +11,7 @@ We are currently doing a survey on robot description formats and the user experi
 
 <div style="text-align: center;">
     <img src="./pictures/Github-Survey.png" alt="Survey QR Code" width="400"/>
-</div>
+</div> -->
 
 ## Introduction
 Robot description format (RDF) contains information about robot model which is required by simulation, visualization, planning etc. In this project, we provide a Fusion360 Add-In for generating robot description files automatically from robot design. 
@@ -127,10 +127,25 @@ Click the add-in icon, then chose the robot description format and targeted simu
 We also provides some robot models that assembled manually, and tested the Add-In with these models. 
 This robot library is continuing update, it is welcome to contribute this library.
 
-
-## FAQ
-
 ## Citation
+For BibTex:
+```
+@INPROCEEDINGS{10715835,
+  author={Qiu, Nuofan and Song, Chaoyang and Wan, Fang},
+  booktitle={2024 International Conference on Advanced Robotics and Mechatronics (ICARM)}, 
+  title={Describing Robots from Design to Learning: Towards an Interactive Lifecycle Representation of Robots}, 
+  year={2024},
+  volume={},
+  number={},
+  pages={1081-1086},
+  keywords={Solid modeling;Mechatronics;Codes;Automation;Pipelines;Morphology;Transforms;Software;Libraries;Robots},
+  doi={10.1109/ICARM62033.2024.10715835}}
+```
+
+Plain Text:
+```
+N. Qiu, C. Song and F. Wan, "Describing Robots from Design to Learning: Towards an Interactive Lifecycle Representation of Robots," 2024 International Conference on Advanced Robotics and Mechatronics (ICARM), Tokyo, Japan, 2024, pp. 1081-1086, doi: 10.1109/ICARM62033.2024.10715835. keywords: {Solid modeling;Mechatronics;Codes;Automation;Pipelines;Morphology;Transforms;Software;Libraries;Robots},
+```
 
 ## Reference
 - [Fusion2PyBullet](https://github.com/yanshil/Fusion2PyBullet)
