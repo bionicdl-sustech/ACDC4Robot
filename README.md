@@ -16,7 +16,8 @@ We are currently doing a survey on robot description formats and the user experi
 ## Introduction
 Robot description format (RDF) contains information about robot model which is required by simulation, visualization, planning etc. In this project, we provide a Fusion360 Add-In for generating robot description files automatically from robot design. 
 
-Currently, this Add-In supports exporting URDF, SDFormat, and MJCF. URDF (Unified Robotics Description Format) has been the most widely used robot description format, but has several limitations and lack of update. 
+Currently, this Add-In supports exporting URDF, SDFormat, and MJCF. 
+URDF (Unified Robotics Description Format) has been the most widely used robot description format, but has several limitations and lack of update. 
 SDFormat (Simulation Description Format) has more features than URDF, such as supporting closed loop chain mechanism. SDFormat has been a seperated project from Gazebo aims to be a simulator indenpendt format but still not as popular as URDF. 
 MJCF is a robot description format used in simulator MuJoCo and has been support by more simulators such as Nvidia Isaac Sim. It also has more features then URDF to provide more robotic system information. 
 Other robot description formats might be supported in the future.

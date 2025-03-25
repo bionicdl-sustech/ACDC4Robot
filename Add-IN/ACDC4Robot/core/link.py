@@ -65,7 +65,6 @@ class Link():
 
         Return:
             j: parent_joints
-        
         """
         # TODO: in closed loop mechanism, there exits one assembly method that
         # make one link have two parent joint, write a instruction or fix this bug

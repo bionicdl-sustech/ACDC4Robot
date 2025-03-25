@@ -87,6 +87,7 @@ def command_created(args: adsk.core.CommandCreatedEventArgs):
     rdf_items.add("URDF", False)
     rdf_items.add("SDFormat", False)
     rdf_items.add("MJCF", False)
+    rdf_items.add("URDF+", False)
 
     # create a drop down command input to choose simulation environment
     sim_env_input = inputs.addDropDownCommandInput("simulation_env", "Simulation Environment", adsk.core.DropDownStyles.LabeledIconDropDownStyle)

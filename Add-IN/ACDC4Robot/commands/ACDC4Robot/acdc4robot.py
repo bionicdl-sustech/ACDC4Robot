@@ -11,6 +11,8 @@ from ...core.joint import Joint
 from . import constants
 from ...core import write
 from ...core import utils
+from ...core.robot import Robot
+from ...core.urdf_plus import URDF_PLUS
 import time
 
 def get_link_joint_list(design: adsk.fusion.Design):
@@ -243,6 +245,16 @@ def run():
                 export_stl(design, save_folder, link_list)
                 time.sleep(0.1)
                 ui.messageBox("Finished exporting MJCF for MuJoCo.", msg_box_title)
+        
+        elif rdf == "URDF+":
+            robot = Robot(design)
+            urdf_plus = URDF_PLUS(robot)
+            urdf_plus_path = save_folder + "/{}.urdf".format(robot.get_robot_name())
+            urdf_plus.write_file(urdf_plus_path)
+            stl_list: list[Link] = robot.get_links()
+            export_stl(design, save_folder, stl_list)
+            time.sleep(0.1)
+            ui.messageBox("Finished exporting URDF+.", msg_box_title)
         
     except:
         if ui:
