@@ -54,7 +54,7 @@ def get_link_joint_list(design: adsk.fusion.Design):
 
     return link_list, joint_list
 
-def export_stl(design: adsk.fusion.Design, save_dir: str, links: list[Link]):
+def export_stl(design: adsk.fusion.Design, save_dir: str, links: list[Link], rdf: str):
     """
     export each component's stl file into "save_dir/mesh"
 
@@ -64,6 +64,8 @@ def export_stl(design: adsk.fusion.Design, save_dir: str, links: list[Link]):
         current active design
     save_dir: str
         the directory to store the export stl file
+    rdf: str
+        robot description format
     """
     # create a single exportManager instance
     export_manager = design.exportManager
@@ -75,9 +77,14 @@ def export_stl(design: adsk.fusion.Design, save_dir: str, links: list[Link]):
     for link in links:
         visual_body: adsk.fusion.BRepBody = link.get_visual_body()
         col_body: adsk.fusion.BRepBody = link.get_collision_body()
+        if rdf == "URDF":
+            mesh_name = mesh_dir + "/" + link.link.component.name
+        else :
+            mesh_name = mesh_dir + "/" + link.get_name()
         if (visual_body is None) and (col_body is None):
             # export the whole occurrence
-            mesh_name = mesh_dir + "/" + link.get_name()
+            if os.path.isfile(mesh_name) :
+                    continue
             occ = link.get_link_occ()
             # obj_export_options = export_manager.createOBJExportOptions(occ, mesh_name)
             # obj_export_options.unitType = adsk.fusion.DistanceUnits.MillimeterDistanceUnits # set unit to mm
@@ -90,14 +97,18 @@ def export_stl(design: adsk.fusion.Design, save_dir: str, links: list[Link]):
             export_manager.execute(stl_export_options)
         elif (visual_body is not None) and (col_body is not None):
             # export visual and collision geometry seperately
-            visual_mesh_name = mesh_dir + "/" + link.get_name() + "_visual"
+            visual_mesh_name = mesh_name + "_visual"
+            if os.path.isfile(visual_mesh_name) :
+                continue
             visual_exp_options = export_manager.createSTLExportOptions(visual_body, visual_mesh_name)
             visual_exp_options.sendToPrintUtility = False
             visual_exp_options.isBinaryFormat = True
             visual_exp_options.meshRefinement = adsk.fusion.MeshRefinementSettings.MeshRefinementLow
             export_manager.execute(visual_exp_options)
 
-            col_mesh_name = mesh_dir + "/" + link.get_name() + "_collision"
+            col_mesh_name = mesh_name + "_collision"
+            if os.path.isfile(col_mesh_name) :
+                continue
             col_exp_options = export_manager.createSTLExportOptions(col_body, col_mesh_name)
             col_exp_options.sendToPrintUtility = False
             col_exp_options.isBinaryFormat = True
@@ -179,14 +190,14 @@ def run():
                 # write to .urdf file
                 write.write_urdf(link_list, joint_list, save_folder, robot_name)
                 # export mesh files
-                export_stl(design, save_folder, link_list)
+                export_stl(design, save_folder, link_list, rdf)
                 ui.messageBox("Finished exporting URDF for Gazebo.", msg_box_title)
                 
             elif simulator == "PyBullet":
                 # write to .urdf file
                 write.write_urdf(link_list, joint_list, save_folder, robot_name)
                 # export mesh files
-                export_stl(design, save_folder, link_list)
+                export_stl(design, save_folder, link_list, rdf)
                 # generate pybullet script
                 write.write_hello_pybullet(rdf, robot_name, save_folder)
                 ui.messageBox("Finished exporting URDF for PyBullet.", msg_box_title)
@@ -195,7 +206,7 @@ def run():
                 # write to .urdf file
                 write.write_urdf(link_list, joint_list, save_folder, robot_name)
                 # export mesh files
-                export_stl(design, save_folder, link_list)
+                export_stl(design, save_folder, link_list, rdf)
                 
                 ui.messageBox("Finished exporting URDF for MuJoCo.", msg_box_title)
 
@@ -211,13 +222,13 @@ def run():
                 des = constants.get_model_description()
                 write.write_sdf_config(save_folder, robot_name, author, des)
                 # export stl files
-                export_stl(design, save_folder, link_list)
+                export_stl(design, save_folder, link_list, rdf)
                 ui.messageBox("Finished exporting SDFormat for Gazebo.", msg_box_title)
             elif simulator == "PyBullet":
                 # write to .sdf file
                 write.write_sdf(link_list, joint_list, save_folder, robot_name)
                 # export stl files
-                export_stl(design, save_folder, link_list)
+                export_stl(design, save_folder, link_list, rdf)
                 # generate pybullet script
                 write.write_hello_pybullet(rdf,robot_name, save_folder)
                 ui.messageBox("Finished exporting SDFormat for PyBullet.", msg_box_title)
@@ -240,7 +251,7 @@ def run():
                 # write to .xml file
                 write.write_mjcf(root, robot_name, save_folder)
                 # export stl files
-                export_stl(design, save_folder, link_list)
+                export_stl(design, save_folder, link_list, rdf)
                 time.sleep(0.1)
                 ui.messageBox("Finished exporting MJCF for MuJoCo.", msg_box_title)
         
