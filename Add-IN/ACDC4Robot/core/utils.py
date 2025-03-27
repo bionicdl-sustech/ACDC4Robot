@@ -16,21 +16,11 @@ def get_valid_filename(s):
     'johns_portrait_in_2004.jpg'
     """
     
-    if re.search(r':1\+', s): 
-        # Remove the number id 
-        # Replace the number `:#+` by `_`
-        s = re.sub(r':.*?\+', '_', s)
-        # Remove the number at the end of the full path name
-        s = re.sub(r':.*$', '', s)
-    else : 
-        # Several body for the composant so keep the number id 
-        # Replace `:` by `-`
-        s = re.sub(r':', '-', s) 
-        # Replace `+` by `_`
-        s = re.sub(r'\+', '_', s)  
-
-    # Replace the number `:#+` by `-#_`
-    s = re.sub(r':.*?\+', '_', s)
+    # Several body for the composant so keep the number id 
+    # Replace `:` by `-`
+    s = re.sub(r':', '-', s) 
+    # Replace `+` by `_`
+    s = re.sub(r'\+', '_', s)  
 
     s = str(s).strip().replace(' ', '-')
     return re.sub(r'(?u)[^-\w.]', '', s)
