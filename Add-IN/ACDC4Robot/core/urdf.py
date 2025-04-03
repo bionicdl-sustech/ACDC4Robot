@@ -710,19 +710,19 @@ def get_link_visual_geo(link: Link) -> str:
     col_body = link.get_collision_body()
     if (visual_body is None) and (col_body is None):
         # visual and collision geometry is same
-        mesh_loc = "meshes/" + link.get_name() + ".stl"
+        mesh_loc = "meshes/" + link.link.component.name + ".stl"
         return mesh_loc
     elif (visual_body is not None) and (col_body is not None):
-        mesh_loc = "meshes/" + link.get_name() + "_visual.stl"
+        mesh_loc = "meshes/" + link.link.component.name + "_visual.stl"
         return mesh_loc
     elif (visual_body is None) and (col_body is not None):
         error_message = "Please set two bodies, one for visual and one for collision. \n"
-        error_message = error_message + link.get_name() + " body for visual missing."
+        error_message = error_message + link.link.component.name + " body for visual missing."
         utils.error_box(error_message)
         utils.terminate_box()
     elif (visual_body is not None) and (col_body is None):
         error_message = "Please set two bodies, one for visual and one for collision. \n"
-        error_message = error_message + link.get_name() + " body for collision missing."
+        error_message = error_message + link.link.component.name + " body for collision missing."
         utils.error_box(error_message)
         utils.terminate_box()
 
@@ -737,19 +737,19 @@ def get_link_collision_geo(link: Link) -> str:
     visual_body = link.get_visual_body()
     col_body = link.get_collision_body()
     if (visual_body is None) and (col_body is None):
-        mesh_loc = "meshes/" + link.get_name() + ".stl"
+        mesh_loc = "meshes/" + link.link.component.name + ".stl"
         return mesh_loc
     elif (visual_body is not None) and (col_body is not None):
-        mesh_loc = "meshes/" + link.get_name() + "_collision.stl"
+        mesh_loc = "meshes/" + link.link.component.name + "_collision.stl"
         return mesh_loc
     elif (visual_body is None) and (col_body is not None):
         error_message = "Please set two bodies, one for visual and one for collision. \n"
-        error_message = error_message + link.get_name() + " body for visual missing."
+        error_message = error_message + link.link.component.name + " body for visual missing."
         utils.error_box(error_message)
         utils.terminate_box()
     elif (visual_body is not None) and (col_body is None):
         error_message = "Please set two bodies, one for visual and one for collision. \n"
-        error_message = error_message + link.get_name() + " body for collision missing."
+        error_message = error_message + link.link.component.name + " body for collision missing."
         utils.error_box(error_message)
         utils.terminate_box()
 

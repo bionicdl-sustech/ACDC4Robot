@@ -181,20 +181,14 @@ class Joint():
             a homogeneous matrix represents joint frame J in world frame W
             translation unit: cm
         """
-        # get parent joint origin's coordinate w.r.t world frame
-        if self.joint.geometryOrOriginTwo == adsk.fusion.JointOrigin:
-            w_P_J = self.joint.geometryOrOriginTwo.geometry.origin.asArray()
-        else:
-            w_P_J = self.joint.geometryOrOriginTwo.origin.asArray()
+        geometry_two_transform = self.joint.geometryTwoTransform
+        matrix_array = geometry_two_transform.asArray()
 
-        w_P_J = [round(i, 6) for i in w_P_J]
-        
-        # no matter jointGeometry or jointOrigin object, both have these properties
-        zAxis: adsk.core.Vector3D = self.joint.geometryOrOriginTwo.primaryAxisVector
-        xAxis: adsk.core.Vector3D = self.joint.geometryOrOriginTwo.secondaryAxisVector
-        yAxis: adsk.core.Vector3D = self.joint.geometryOrOriginTwo.thirdAxisVector
+        origin = adsk.core.Point3D.create(matrix_array[3], matrix_array[7], matrix_array[11])
 
-        origin = adsk.core.Point3D.create(w_P_J[0], w_P_J[1], w_P_J[2])
+        xAxis = adsk.core.Vector3D.create(matrix_array[0], matrix_array[1], matrix_array[2])
+        yAxis = adsk.core.Vector3D.create(matrix_array[4], matrix_array[5], matrix_array[6])
+        zAxis = adsk.core.Vector3D.create(matrix_array[8], matrix_array[9], matrix_array[10])
 
         joint_frame = adsk.core.Matrix3D.create()
         joint_frame.setWithCoordinateSystem(origin, xAxis, yAxis, zAxis)
