@@ -55,8 +55,8 @@ def get_link_joint_list(design: adsk.fusion.Design):
 
     for joint in root.allJoints:
         joint_list.append(Joint(joint)) # add joint objects into joint_list
-    for j in root.allAsBuiltJoints:
-        joint_list.append(Joint(j)) # add joint objects into joint_list
+    for joint in root.allAsBuiltJoints:
+        joint_list.append(Joint(joint)) # add joint objects into joint_list
 
     return link_list, joint_list
 
