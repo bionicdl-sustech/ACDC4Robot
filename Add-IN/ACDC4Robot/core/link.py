@@ -56,6 +56,14 @@ class Link():
             occurrence the link instance referenced
         """
         return self.link
+    
+    def is_visible(self) -> bool:
+        """
+        Check if the occurrence has the light bulb on
+        Return:
+        bool
+        """
+        return self.link.isLightBulbOn
 
     def get_parent_joint(self) -> adsk.fusion.Joint:
         """

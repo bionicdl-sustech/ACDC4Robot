@@ -10,7 +10,6 @@ from xml.etree.ElementTree import Element, SubElement
 import xml.etree.ElementTree as ET
 from . import math_operation as math_op
 from . import utils
-from ..commands.ACDC4Robot import constants
 from .robot import Robot
 
 class URDF():
@@ -33,7 +32,8 @@ class URDF():
         
         for joint in self.tree_joints:
             joint_ele = self.get_joint_element(joint)
-            robot_ele.append(joint_ele)
+            if joint_ele is not None:
+                robot_ele.append(joint_ele)
         
         # set indent to pretty the xml output
         ET.indent(urdf_tree, space="    ", level=0)
@@ -102,7 +102,11 @@ class URDF():
         joint_ele = Element("joint")
         joint_ele.attrib = {"name": self.get_joint_name(joint),
                             "type": self.get_joint_type(joint)}
-        
+        parentLink = self.get_joint_parent(joint)
+        childLink = self.get_joint_child(joint)
+        if not parentLink.is_visible() or not childLink.is_visible():
+            return None
+
         # add joint origin element
         origin = SubElement(joint_ele, "origin")
         origin.attrib = {"xyz": "{} {} {}".format(self.get_joint_origin(joint)[0], self.get_joint_origin(joint)[1], self.get_joint_origin(joint)[2]),
@@ -110,9 +114,9 @@ class URDF():
         
         # add parent and child element
         parent = SubElement(joint_ele, "parent")
-        parent.attrib = {"link": self.get_link_name(self.get_joint_parent(joint))}
+        parent.attrib = {"link": self.get_link_name(parentLink)}
         child = SubElement(joint_ele, "child")
-        child.attrib = {"link": self.get_link_name(self.get_joint_child(joint))}
+        child.attrib = {"link": self.get_link_name(childLink)}
 
         # add axis1, urdf only has one axis for joint
         axis = self.get_joint_axis(joint)
@@ -160,7 +164,7 @@ class URDF():
             unit: m, radian
         """
         # the link is the first link so called base-link
-        if link.get_parent_joint() is None:
+        if not joint_has_geometry(link.get_parent_joint()):
             # for the first link which does not have parent joint
             # do not know the CoM is w.r.t world frame or the link frame
             # do not found the details from the description, but according to the figure from:
@@ -205,10 +209,6 @@ class URDF():
             CoM_frame_y: adsk.core.Vector3D = from_yAxis
             CoM_frame_z: adsk.core.Vector3D = from_zAxis
             CoM_frame.setWithCoordinateSystem(CoM_frame_O, CoM_frame_x, CoM_frame_y, CoM_frame_z)
-            to_origin, to_xAsix, to_yAxis, to_zAxis = CoM_frame.getAsCoordinateSystem()
-            transform = adsk.core.Matrix3D.create()
-            # transform.setToAlignCoordinateSystems(from_origin, from_xAxis, from_yAxis, from_zAxis, 
-            #                                     to_origin, to_xAsix, to_yAxis, to_zAxis)
             transform = math_op.coordinate_transform(parent_joint_frame, CoM_frame)
 
             inertial_origin = math_op.matrix3d_2_pose(transform)
@@ -258,7 +258,7 @@ class URDF():
         parent_joint = link.get_parent_joint()
         # parent frame for a link has parent joint, is the parent joint frame
         # else, is the link frame itselt
-        if parent_joint is None:
+        if not joint_has_geometry(parent_joint):
             parent_frame: adsk.core.Matrix3D = link.pose
         else:
             joint = Joint(parent_joint)
@@ -305,17 +305,14 @@ class URDF():
             mesh_origin = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
         else:
             joint = Joint(link.get_parent_joint())
-            parent_joint_frame: adsk.core.Matrix3D = joint.get_joint_frame()
             # link frame coincides with the mesh's frame
             link_frame: adsk.core.Matrix3D = link.pose
-            from_origin, from_xAxis, from_yAxis, from_zAxis = parent_joint_frame.getAsCoordinateSystem()
-            to_origin, to_xAsix, to_yAxis, to_zAxis = link_frame.getAsCoordinateSystem()
-
-            transform = adsk.core.Matrix3D.create()
-            # transform.setToAlignCoordinateSystems(from_origin, from_xAxis, from_yAxis, from_zAxis, 
-            #                                     to_origin, to_xAsix, to_yAxis, to_zAxis)
-            transform = math_op.coordinate_transform(parent_joint_frame, link_frame)
-            mesh_origin = math_op.matrix3d_2_pose(transform)
+            if joint.has_origin():
+                parent_joint_frame: adsk.core.Matrix3D = joint.get_joint_frame()
+                transform = math_op.coordinate_transform(parent_joint_frame, link_frame)
+                mesh_origin = math_op.matrix3d_2_pose(transform)
+            else:
+                mesh_origin = math_op.matrix3d_2_pose(link_frame)
 
         return mesh_origin
 
@@ -415,21 +412,22 @@ class URDF():
         parent_joint: adsk.fusion.Joint = parent_link.get_parent_joint()
 
         # get the parent frame
-        if parent_joint is None:
-            # if the parent link does not have parent joint(which means the root link), 
+        if not joint_has_geometry(parent_joint):
+            # if the parent link does not have parent joint(which means the root link),
             # then the parent link frame is the parent frame
             parent_frame: adsk.core.Matrix3D = parent_link.pose
         else:
             parent_joint: Joint = Joint(parent_joint)
             parent_frame = parent_joint.get_joint_frame()
-        
+
         # get joint frame w.r.t world frame
-        joint_frame = joint.get_joint_frame()
-
-        transform = adsk.core.Matrix3D.create()
-        transform = math_op.coordinate_transform(parent_frame, joint_frame)
-        joint_origin = math_op.matrix3d_2_pose(transform)
-
+        if joint.has_origin():
+            joint_frame = joint.get_joint_frame()
+            transform = math_op.coordinate_transform(parent_frame, joint_frame)
+            joint_origin = math_op.matrix3d_2_pose(transform)
+        else: 
+            joint_origin = math_op.matrix3d_2_pose(parent_frame)
+            
         return joint_origin
 
     def get_joint_parent(self, joint: Joint) -> Link:
@@ -850,8 +848,8 @@ def get_joint_origin(joint: Joint) -> list[float]:
     parent_joint: adsk.fusion.Joint = parent_link.get_parent_joint()
 
     # get the parent frame
-    if parent_joint is None:
-        # if the parent link does not have parent joint(which means the root link), 
+    if not joint_has_geometry(parent_joint):
+        # if the parent link does not have parent joint(which means the root link),
         # then the parent link frame is the parent frame
         parent_frame: adsk.core.Matrix3D = parent_link.pose
     else:
@@ -859,13 +857,12 @@ def get_joint_origin(joint: Joint) -> list[float]:
         parent_frame = parent_joint.get_joint_frame()
     
     # get joint frame w.r.t world frame
-    joint_frame = joint.get_joint_frame()
-    if joint_frame is None or parent_frame is None:
-        return None
-
-    transform = adsk.core.Matrix3D.create()
-    transform = math_op.coordinate_transform(parent_frame, joint_frame)
-    joint_origin = math_op.matrix3d_2_pose(transform)
+    if joint.has_origin():
+        joint_frame = joint.get_joint_frame()
+        transform = math_op.coordinate_transform(parent_frame, joint_frame)
+        joint_origin = math_op.matrix3d_2_pose(transform)
+    else:
+        joint_origin = math_op.matrix3d_2_pose(parent_frame)
 
     return joint_origin
 
@@ -964,7 +961,11 @@ def get_joint_element(joint: Joint) -> Element:
     joint_ele = Element("joint")
     joint_ele.attrib = {"name": get_joint_name(joint),
                         "type": get_joint_type(joint)}
-    
+    parentLink = get_joint_parent(joint)
+    childLink = get_joint_child(joint)
+    if not parentLink.is_visible() or not childLink.is_visible():
+        return None
+
     # add joint origin element
     if joint.has_origin():
         origin = SubElement(joint_ele, "origin")
@@ -974,9 +975,9 @@ def get_joint_element(joint: Joint) -> Element:
 
     # add parent and child element
     parent = SubElement(joint_ele, "parent")
-    parent.attrib = {"link": get_link_name(get_joint_parent(joint))}
+    parent.attrib = {"link": get_link_name(parentLink)}
     child = SubElement(joint_ele, "child")
-    child.attrib = {"link": get_link_name(get_joint_child(joint))}
+    child.attrib = {"link": get_link_name(childLink)}
 
     # add axis1, urdf only has one axis for joint
     axis = get_joint_axis(joint)
