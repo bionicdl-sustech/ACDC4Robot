@@ -69,18 +69,14 @@ class Link():
         # TODO: in closed loop mechanism, there exits one assembly method that
         # make one link have two parent joint, write a instruction or fix this bug
         # text_palette = constants.get_text_palette()
-        joint_list: adsk.fusion.JointList = self.link.joints
-        # text_palette.writeText("Link: {}".format(self.get_name()))
-        for j in joint_list:
-            # text_palette.writeText("Joint list item: {}".format(j.name))
-            # text_palette.writeText("Joint's child link: {}".format(j.occurrenceOne.fullPathName))
-            if j.occurrenceOne == self.link:
-                # text_palette.writeText("Return j type: {}".format(j.objectType))
-                return j
-            else:
-                continue
-
-        # text_palette.writeText("Return a None")
+        app = adsk.core.Application.get()
+        root = adsk.fusion.Design.cast(app.activeProduct).rootComponent
+        for joint in root.allJoints:
+            if joint.occurrenceOne == self.link:
+                return joint
+        for join in root.allAsBuiltJoints:
+            if join.occurrenceOne == self.link:
+                return join
         return None
 
     def get_name(self) -> str:
