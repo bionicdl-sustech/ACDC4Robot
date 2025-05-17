@@ -29,12 +29,12 @@ class URDF():
         for link in self.links:
             link_ele = self.get_link_element(link)
             robot_ele.append(link_ele)
-        
+
         for joint in self.tree_joints:
             joint_ele = self.get_joint_element(joint)
             if joint_ele is not None:
                 robot_ele.append(joint_ele)
-        
+
         # set indent to pretty the xml output
         ET.indent(urdf_tree, space="    ", level=0)
 
@@ -54,6 +54,7 @@ class URDF():
         # create a link element
         link_ele = Element("link")
         link_ele.attrib = {"name": self.get_link_name(link)}
+        mesh_origin = self.get_mesh_origin(link)
 
         # add inertia sub-element
         inertial = SubElement(link_ele, "inertial")
@@ -69,13 +70,13 @@ class URDF():
                         "ixy": "{}".format(self.get_link_inertia(link)[3]),
                         "iyz": "{}".format(self.get_link_inertia(link)[4]),
                         "ixz": "{}".format(self.get_link_inertia(link)[5])}
-        
+
         # add visual sub-element
         visual = SubElement(link_ele, "visual")
         visual.attrib = {"name": "{}".format(self.get_link_visual_name(link))}
         origin_v = SubElement(visual, "origin")
-        origin_v.attrib = {"xyz": "{} {} {}".format(self.get_mesh_origin(link)[0], self.get_mesh_origin(link)[1], self.get_mesh_origin(link)[2]),
-                        "rpy": "{} {} {}".format(self.get_mesh_origin(link)[3], self.get_mesh_origin(link)[4], self.get_mesh_origin(link)[5])}
+        origin_v.attrib = {"xyz": "{} {} {}".format(mesh_origin[0], mesh_origin[1], mesh_origin[2]),
+                        "rpy": "{} {} {}".format(mesh_origin[3], mesh_origin[4], mesh_origin[5])}
         geometry_v = SubElement(visual, "geometry")
         mesh_v = SubElement(geometry_v, "mesh")
         mesh_v.attrib = {"filename": self.get_link_visual_geo(link), "scale": "0.001 0.001 0.001"}
@@ -84,8 +85,8 @@ class URDF():
         collision = SubElement(link_ele, "collision")
         collision.attrib = {"name": "{}".format(self.get_link_collision_name(link))}
         origin_c = SubElement(collision, "origin")
-        origin_c.attrib = {"xyz": "{} {} {}".format(self.get_mesh_origin(link)[0], self.get_mesh_origin(link)[1], self.get_mesh_origin(link)[2]),
-                        "rpy": "{} {} {}".format(self.get_mesh_origin(link)[3], self.get_mesh_origin(link)[4], self.get_mesh_origin(link)[5])}
+        origin_c.attrib = {"xyz": "{} {} {}".format(mesh_origin[0], mesh_origin[1], mesh_origin[2]),
+                        "rpy": "{} {} {}".format(mesh_origin[3], mesh_origin[4], mesh_origin[5])}
         geometry_c = SubElement(collision, "geometry")
         mesh_c = SubElement(geometry_c, "mesh")
         mesh_c.attrib = {"filename": self.get_link_collision_geo(link), "scale": "0.001 0.001 0.001"}
@@ -111,7 +112,7 @@ class URDF():
         origin = SubElement(joint_ele, "origin")
         origin.attrib = {"xyz": "{} {} {}".format(self.get_joint_origin(joint)[0], self.get_joint_origin(joint)[1], self.get_joint_origin(joint)[2]),
                         "rpy": "{} {} {}".format(self.get_joint_origin(joint)[3], self.get_joint_origin(joint)[4], self.get_joint_origin(joint)[5])}
-        
+
         # add parent and child element
         parent = SubElement(joint_ele, "parent")
         parent.attrib = {"link": self.get_link_name(parentLink)}
@@ -132,7 +133,7 @@ class URDF():
                                 "upper": "{}".format(limit[1]),
                                 "effort": "{}".format(limit[2]),
                                 "velocity": "{}".format(limit[3])}
-        
+
         return joint_ele
 
     def get_robot_ele(self, ):
@@ -144,10 +145,10 @@ class URDF():
 
         return robot_ele
 
-    
+
     def get_link_name(self, link: Link) -> str:
         """
-        Return 
+        Return
         ---------
         name: str
             link's full path name
@@ -177,7 +178,7 @@ class URDF():
             yaw = 0.0
             w_CoM_x = link.phyPro.centerOfMass.x # point CoM's x coordinate w.r.t world-frame
             w_CoM_y = link.phyPro.centerOfMass.y
-            w_CoM_z = link.phyPro.centerOfMass.z 
+            w_CoM_z = link.phyPro.centerOfMass.z
             w_Lo_x = link.pose.translation.x    # link-frame's origin point's x coordinat w.r.t world-frame
             w_Lo_y = link.pose.translation.y
             w_Lo_z = link.pose.translation.z
@@ -196,10 +197,10 @@ class URDF():
             joint = Joint(link.get_parent_joint())
             parent_joint_frame: adsk.core.Matrix3D = joint.get_joint_frame()
             from_origin, from_xAxis, from_yAxis, from_zAxis = parent_joint_frame.getAsCoordinateSystem()
-            
+
             w_CoM_x = link.phyPro.centerOfMass.x # point CoM's x coordinate w.r.t world-frame
             w_CoM_y = link.phyPro.centerOfMass.y
-            w_CoM_z = link.phyPro.centerOfMass.z 
+            w_CoM_z = link.phyPro.centerOfMass.z
 
             # Let the CoM-frame C has the same orientation with parent link frame
             CoM_frame_O: adsk.core.Point3D = adsk.core.Point3D.create()
@@ -253,7 +254,7 @@ class URDF():
         inertia_tensor = [[com_ixx, com_ixy, com_ixz],
                             [com_ixy, com_iyy, com_iyz],
                             [com_ixz, com_iyz, com_izz]]
-        
+
         # get the parent frame
         parent_joint = link.get_parent_joint()
         # parent frame for a link has parent joint, is the parent joint frame
@@ -300,9 +301,7 @@ class URDF():
             unit: m, radian
         """
         if link.get_parent_joint() is None:
-            # for the first link which does not have parent joint
-            # the mesh frame coincides with the link frame L
-            mesh_origin = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+            mesh_origin = math_op.matrix3d_2_pose(link.pose)
         else:
             joint = Joint(link.get_parent_joint())
             # link frame coincides with the mesh's frame
@@ -371,7 +370,7 @@ class URDF():
             utils.error_box(error_message)
             utils.terminate_box()
 
-    
+
     def get_joint_name(self, joint: Joint) -> str:
         """
         Return
@@ -425,9 +424,9 @@ class URDF():
             joint_frame = joint.get_joint_frame()
             transform = math_op.coordinate_transform(parent_frame, joint_frame)
             joint_origin = math_op.matrix3d_2_pose(transform)
-        else: 
+        else:
             joint_origin = math_op.matrix3d_2_pose(parent_frame)
-            
+
         return joint_origin
 
     def get_joint_parent(self, joint: Joint) -> Link:
@@ -462,14 +461,14 @@ class URDF():
         """
         # urdf joint axis is expressed w.r.t parent frame, which is the link frame or the parent joint frame
         if joint.joint.jointMotion.jointType == 0: # RigidJointType
-            w_axis = None 
+            w_axis = None
             axis = None
             return axis
         elif joint.joint.jointMotion.jointType == 1: # RevoluteJointType
             w_axis = [round(i, 6) for i in joint.joint.jointMotion.rotationAxisVector.asArray()] # In Fusion360, returned axis is normalized
         elif joint.joint.jointMotion.jointType == 2: # SliderJointType
             w_axis = [round(i, 6) for i in joint.joint.jointMotion.slideDirectionVector.asArray()] # In Fusion360, returned axis is normalized
-        
+
         J_axis = None
         joint_frame: adsk.core.Matrix3D = joint.get_joint_frame()
         w_R_J = math_op.get_rotation_matrix(joint_frame) # represent joint-frame J's orientation w.r.t world-frame w
@@ -515,12 +514,12 @@ class URDF():
             else:
                 return None
 
-    
+
 
 
 def get_link_name(link: Link) -> str:
     """
-    Return 
+    Return
     ---------
     name: str
         link's full path name
@@ -559,7 +558,7 @@ def get_link_inertial_origin(link: Link) -> list[float]:
         yaw = 0.0
         w_CoM_x = link.phyPro.centerOfMass.x # point CoM's x coordinate w.r.t world-frame
         w_CoM_y = link.phyPro.centerOfMass.y
-        w_CoM_z = link.phyPro.centerOfMass.z 
+        w_CoM_z = link.phyPro.centerOfMass.z
         w_Lo_x = link.pose.translation.x    # link-frame's origin point's x coordinat w.r.t world-frame
         w_Lo_y = link.pose.translation.y
         w_Lo_z = link.pose.translation.z
@@ -578,10 +577,10 @@ def get_link_inertial_origin(link: Link) -> list[float]:
         joint = Joint(link.get_parent_joint())
         parent_joint_frame: adsk.core.Matrix3D = joint.get_joint_frame()
         from_origin, from_xAxis, from_yAxis, from_zAxis = parent_joint_frame.getAsCoordinateSystem()
-        
+
         w_CoM_x = link.phyPro.centerOfMass.x # point CoM's x coordinate w.r.t world-frame
         w_CoM_y = link.phyPro.centerOfMass.y
-        w_CoM_z = link.phyPro.centerOfMass.z 
+        w_CoM_z = link.phyPro.centerOfMass.z
 
         # Let the CoM-frame C has the same orientation with parent link frame
         CoM_frame_O: adsk.core.Point3D = adsk.core.Point3D.create()
@@ -593,7 +592,7 @@ def get_link_inertial_origin(link: Link) -> list[float]:
         CoM_frame.setWithCoordinateSystem(CoM_frame_O, CoM_frame_x, CoM_frame_y, CoM_frame_z)
         to_origin, to_xAsix, to_yAxis, to_zAxis = CoM_frame.getAsCoordinateSystem()
         transform = adsk.core.Matrix3D.create()
-        # transform.setToAlignCoordinateSystems(from_origin, from_xAxis, from_yAxis, from_zAxis, 
+        # transform.setToAlignCoordinateSystems(from_origin, from_xAxis, from_yAxis, from_zAxis,
         #                                     to_origin, to_xAsix, to_yAxis, to_zAxis)
         transform = math_op.coordinate_transform(parent_joint_frame, CoM_frame)
 
@@ -639,7 +638,7 @@ def get_link_inertia(link: Link) -> list[float]:
     inertia_tensor = [[com_ixx, com_ixy, com_ixz],
                         [com_ixy, com_iyy, com_iyz],
                         [com_ixz, com_iyz, com_izz]]
-    
+
     # get the parent frame
     parent_joint = link.get_parent_joint()
     # parent frame for a link has parent joint, is the parent joint frame
@@ -686,9 +685,7 @@ def get_mesh_origin(link: Link) -> list[float]:
         unit: m, radian
     """
     if link.get_parent_joint() is None:
-        # for the first link which does not have parent joint
-        # the mesh frame coincides with the link frame L
-        mesh_origin = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+        mesh_origin = math_op.matrix3d_2_pose(link.pose)
     else:
         joint = Joint(link.get_parent_joint())
         if joint.has_origin():
@@ -855,7 +852,7 @@ def get_joint_origin(joint: Joint) -> list[float]:
     else:
         parent_joint: Joint = Joint(parent_joint)
         parent_frame = parent_joint.get_joint_frame()
-    
+
     # get joint frame w.r.t world frame
     if joint.has_origin():
         joint_frame = joint.get_joint_frame()
@@ -898,14 +895,14 @@ def get_joint_axis(joint: Joint) -> list[float]:
     """
     # urdf joint axis is expressed w.r.t parent frame, which is the link frame or the parent joint frame
     if joint.joint.jointMotion.jointType == 0: # RigidJointType
-        w_axis = None 
+        w_axis = None
         axis = None
         return axis
     elif joint.joint.jointMotion.jointType == 1: # RevoluteJointType
         w_axis = [round(i, 6) for i in joint.joint.jointMotion.rotationAxisVector.asArray()] # In Fusion360, returned axis is normalized
     elif joint.joint.jointMotion.jointType == 2: # SliderJointType
         w_axis = [round(i, 6) for i in joint.joint.jointMotion.slideDirectionVector.asArray()] # In Fusion360, returned axis is normalized
-    
+
     J_axis = None
     joint_frame: adsk.core.Matrix3D = joint.get_joint_frame()
     w_R_J = math_op.get_rotation_matrix(joint_frame) # represent joint-frame J's orientation w.r.t world-frame w
@@ -993,5 +990,5 @@ def get_joint_element(joint: Joint) -> Element:
                             "upper": "{}".format(limit[1]),
                             "effort": "{}".format(limit[2]),
                             "velocity": "{}".format(limit[3])}
-    
+
     return joint_ele
