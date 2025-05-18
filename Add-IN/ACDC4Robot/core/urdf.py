@@ -101,7 +101,7 @@ class URDF():
             xml elements contains informations for joint
         """
         joint_ele = Element("joint")
-        joint_ele.attrib = {"name": self.get_joint_name(joint),
+        joint_ele.attrib = {"name": joint.get_full_path_name(),
                             "type": self.get_joint_type(joint)}
         parentLink = self.get_joint_parent(joint)
         childLink = self.get_joint_child(joint)
@@ -109,9 +109,11 @@ class URDF():
             return None
 
         # add joint origin element
-        origin = SubElement(joint_ele, "origin")
-        origin.attrib = {"xyz": "{} {} {}".format(self.get_joint_origin(joint)[0], self.get_joint_origin(joint)[1], self.get_joint_origin(joint)[2]),
-                        "rpy": "{} {} {}".format(self.get_joint_origin(joint)[3], self.get_joint_origin(joint)[4], self.get_joint_origin(joint)[5])}
+        if joint.has_origin():
+            origin = SubElement(joint_ele, "origin")
+            originCoords = self.get_joint_origin(joint)
+            origin.attrib = {"xyz": "{} {} {}".format(originCoords[0], originCoords[1], originCoords[2]),
+                            "rpy": "{} {} {}".format(originCoords[3], originCoords[4], originCoords[5])}
 
         # add parent and child element
         parent = SubElement(joint_ele, "parent")
@@ -292,6 +294,27 @@ class URDF():
         collision_name = link.get_name() + "_collision"
         return collision_name
 
+    def get_relative_link_frame(self, link: Link) -> adsk.core.Matrix3D:
+        """
+        Get the coordinate frame for a link, relative to it's parent joint.
+        NOTE: Rigid as-built joints don't have an origin, so we need to traverse up the tree
+        until we find a joint origin, and then relatively transform the frame from there
+        """
+        link_frame: adsk.core.Matrix3D = link.pose
+        if link.get_parent_joint() is None:
+            return link.pose
+        else:
+            joint = Joint(link.get_parent_joint())
+            link_frame: adsk.core.Matrix3D = link.pose
+            if joint.has_origin():
+                parent_joint_frame: adsk.core.Matrix3D = joint.get_joint_frame()
+                return math_op.coordinate_transform(parent_joint_frame, link_frame)
+            else:
+                # Traverse up to the next parent link
+                parent_link = Link(joint.parent)
+                parent_frame = self.get_relative_link_frame(parent_link)
+                return math_op.coordinate_transform(parent_frame, link_frame)
+
     def get_mesh_origin(self, link: Link) -> list[float]:
         """
         The reference frame for mesh element of visual and collision w.r.t link frame L
@@ -300,19 +323,8 @@ class URDF():
         mesh_origin: [x, y, z, roll, pitch, yaw]
             unit: m, radian
         """
-        if link.get_parent_joint() is None:
-            mesh_origin = math_op.matrix3d_2_pose(link.pose)
-        else:
-            joint = Joint(link.get_parent_joint())
-            # link frame coincides with the mesh's frame
-            link_frame: adsk.core.Matrix3D = link.pose
-            if joint.has_origin():
-                parent_joint_frame: adsk.core.Matrix3D = joint.get_joint_frame()
-                transform = math_op.coordinate_transform(parent_joint_frame, link_frame)
-                mesh_origin = math_op.matrix3d_2_pose(transform)
-            else:
-                mesh_origin = math_op.matrix3d_2_pose(link_frame)
-
+        frame = self.get_relative_link_frame(link)
+        mesh_origin = math_op.matrix3d_2_pose(frame)
         return mesh_origin
 
     def get_link_visual_geo(self, link: Link) -> str:
@@ -406,8 +418,7 @@ class URDF():
             describe the pose of the joint frame J w.r.t parent frame(parent link frame L or parent link's parent jont frame J)
             unit: m, radian
         """
-        parent_link: adsk.fusion.Occurrence = joint.parent
-        parent_link: Link = Link(parent_link)
+        parent_link: Link = Link(joint.parent)
         parent_joint: adsk.fusion.Joint = parent_link.get_parent_joint()
 
         # get the parent frame

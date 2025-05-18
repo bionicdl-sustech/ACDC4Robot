@@ -10,7 +10,6 @@ from xml.etree.ElementTree import ElementTree, Element, SubElement
 from ..commands.ACDC4Robot import constants
 from . import utils
 from . import math_operation as math_op
-# from .link import Link
 
 class Joint():
     """
@@ -43,6 +42,19 @@ class Joint():
         # output name is consistent with the name in Fusion
         name = utils.get_valid_filename(self.name)
         return name
+
+    def get_full_path_name(self):
+        """
+        Return:
+        path: str
+            The joint name and parent component path
+        """
+        # joint names inside each occurrence are identical
+        # but joint names in different occurrences can be the same, in which makes conflict
+        if self.child:
+            child_name = utils.get_valid_filename(self.child.fullPathName)
+            return f"{child_name}_{self.get_name()}"
+        return self.get_name()
 
     def get_parent(self):
         """
